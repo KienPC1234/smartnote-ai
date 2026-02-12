@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #09090b;
+
+  /* Theme Colors */
+  --main: #fb7185;
+  --main-foreground: #ffffff;
+  --secondary-background: #ffffff;
+  --border: #09090b;
+  --shadow: #09090b;
+
+  --primary: #fb7185;
+  --secondary: #2dd4bf;
+  --accent: #fcd34d;
+  --purple: #a78bfa;
+
+  --boxShadowX: 3px;
+  --boxShadowY: 3px;
+  --reverseBoxShadowX: -3px;
+  --reverseBoxShadowY: -3px;
+
+  /* Màu ô ly vở - Light */
+  --grid-color: rgba(0, 0, 0, 0.15);
+}
+
+.dark {
+  --background: #0c0a09;
+  --foreground: #f8fafc;
+
+  --main: #e11d48;
+  --main-foreground: #ffffff;
+  --secondary-background: #1c1917;
+  --border: #f8fafc;
+  --shadow: #000000;
+
+  --primary: #f43f5e;
+  --secondary: #14b8a6;
+  --accent: #f59e0b;
+  --purple: #8b5cf6;
+
+  /* Màu ô ly vở - Dark */
+  --grid-color: rgba(255, 255, 255, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-main: var(--main);
+  --color-main-foreground: var(--main-foreground);
+  --color-secondary-background: var(--secondary-background);
+  --color-border: var(--border);
+  --color-shadow: var(--shadow);
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-purple: var(--purple);
+
+  --spacing-boxShadowX: var(--boxShadowX);
+  --spacing-boxShadowY: var(--boxShadowY);
+  --spacing-reverseBoxShadowX: var(--reverseBoxShadowX);
+  --spacing-reverseBoxShadowY: var(--reverseBoxShadowY);
+}
+
+body {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center top;
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.bg-main {
+  color: #fff !important;
+}
+
+/* Animations */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 25s linear infinite;
+}
