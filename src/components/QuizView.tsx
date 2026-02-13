@@ -148,7 +148,7 @@ export default function QuizView({
             setAssessmentText(text.slice(0, i));
             i++;
             if (i > text.length) clearInterval(interval);
-        }, 30); 
+        }, 20); 
         return () => clearInterval(interval);
     } else {
         setAssessmentText("");
@@ -193,24 +193,24 @@ export default function QuizView({
 
   if (showResults) {
     return (
-        <div className="max-w-4xl mx-auto space-y-12 py-10 animate-in zoom-in-95 duration-500">
+        <div className="max-w-3xl mx-auto space-y-8 py-6 animate-in zoom-in-95 duration-500">
             <AlertDialog open={isReassessAlertOpen} onOpenChange={setIsReassessOpen}>
-                <AlertDialogContent className="border-8 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] bg-background">
+                <AlertDialogContent className="border-4 border-border shadow-[10px_10px_0px_0px_var(--shadow)] bg-background">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-3 text-3xl font-black uppercase italic text-foreground">
-                            <AlertTriangle className="w-8 h-8 text-orange-500" />
+                        <AlertDialogTitle className="flex items-center gap-3 text-2xl font-bold uppercase italic text-foreground tracking-tight">
+                            <AlertTriangle className="w-6 h-6 text-orange" />
                             {t.note.quiz_reassess.title}
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="font-bold text-lg text-foreground opacity-80">
+                        <AlertDialogDescription className="font-bold text-base text-foreground opacity-70 italic">
                             {t.note.quiz_reassess.desc}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="gap-4">
+                    <AlertDialogFooter className="gap-3">
                         <AlertDialogCancel asChild>
-                            <Button variant="neutral" className="border-4 border-black dark:border-white font-black uppercase text-foreground h-14 px-8">{t.note.quiz_reassess.cancel}</Button>
+                            <Button variant="outline" className="border-2 border-border font-bold uppercase text-foreground h-12 px-6 shadow-[2px_2px_0_0_var(--shadow)]">{t.note.quiz_reassess.cancel}</Button>
                         </AlertDialogCancel>
                         <AlertDialogAction asChild>
-                            <Button onClick={startAnalysis} className="bg-orange-500 text-white border-4 border-black dark:border-white font-black uppercase shadow-[6px_6px_0_0_#000] h-14 px-8">
+                            <Button onClick={startAnalysis} className="bg-orange text-white border-2 border-border font-bold uppercase shadow-[4px_4px_0_0_var(--shadow)] h-12 px-6 hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all">
                                 {t.note.quiz_reassess.confirm}
                             </Button>
                         </AlertDialogAction>
@@ -218,29 +218,29 @@ export default function QuizView({
                 </AlertDialogContent>
             </AlertDialog>
 
-            <div className="border-8 border-black dark:border-white p-16 bg-[var(--accent)] shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] dark:shadow-[20px_20px_0px_0px_rgba(255,255,255,1)] text-center relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-full h-4 bg-black/10 dark:bg-white/10 animate-pulse"></div>
-                <h2 className="text-8xl md:text-[10rem] font-black mb-6 italic tracking-tighter uppercase text-black group-hover:scale-105 transition-transform duration-500">
+            <div className="border-4 border-border p-10 bg-accent text-foreground shadow-[12px_12px_0px_0px_var(--shadow)] text-center relative overflow-hidden group transition-colors">
+                <div className="absolute top-0 left-0 w-full h-2 bg-foreground/10 animate-pulse"></div>
+                <h2 className="text-7xl md:text-9xl font-black mb-4 italic tracking-tighter uppercase text-foreground group-hover:scale-105 transition-transform duration-500">
                     {questions.length > 0 ? Math.round((score/questions.length)*100) : 0}%
                 </h2>
-                <p className="text-3xl font-black uppercase tracking-[0.3em] mb-10 text-black opacity-80">
+                <p className="text-xl font-bold uppercase tracking-[0.2em] mb-8 opacity-70">
                     {t.note.quiz_content.accuracy}: {score} / {questions.length}
                 </p>
                 
-                <div className="p-10 bg-white/50 dark:bg-black/20 border-8 border-black dark:border-white font-black italic mb-12 max-w-3xl mx-auto text-black dark:text-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.1)]">
-                    <Sparkles className="w-10 h-10 mx-auto mb-4 animate-bounce" />
-                    <span className="uppercase text-xs block opacity-60 mb-2 tracking-widest">{t.note.quiz_content.assessment_label}</span>
-                    <p className="text-xl md:text-2xl leading-relaxed">{assessmentText}<span className="inline-block w-2 h-6 bg-black dark:bg-white animate-pulse ml-1" /></p>
+                <div className="p-6 bg-background/50 border-4 border-border font-bold italic mb-8 max-w-2xl mx-auto text-foreground shadow-[6px_6px_0px_0px_var(--shadow)]">
+                    <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary animate-bounce" />
+                    <span className="uppercase text-[10px] block opacity-50 mb-2 tracking-widest">{t.note.quiz_content.assessment_label}</span>
+                    <p className="text-lg md:text-xl leading-relaxed">{assessmentText}<span className="inline-block w-1.5 h-5 bg-foreground animate-pulse ml-1" /></p>
                     
                     {isAnalyzing && (
-                        <div className="mt-8 flex items-center justify-center gap-4 text-sm uppercase animate-pulse">
-                            <Loader2 className="w-6 h-6 animate-spin" /> {t.note.quiz_content.identifying_gaps}
+                        <div className="mt-6 flex items-center justify-center gap-3 text-xs uppercase animate-pulse opacity-60">
+                            <Loader2 className="w-4 h-4 animate-spin" /> {t.note.quiz_content.identifying_gaps}
                         </div>
                     )}
                 </div>
 
-                <Button onClick={reset} size="lg" className="h-20 px-12 border-4 border-black dark:border-white font-black uppercase flex items-center gap-3 mx-auto text-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all bg-background text-foreground">
-                    <RefreshCcw className="w-6 h-6" /> {t.note.quiz_content.recalibrate}
+                <Button onClick={reset} className="h-16 px-10 border-4 border-border font-bold uppercase flex items-center gap-3 mx-auto text-lg shadow-[6px_6px_0px_0px_var(--shadow)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_var(--primary)] transition-all bg-background text-foreground">
+                    <RefreshCcw className="w-5 h-5" /> {t.note.quiz_content.recalibrate}
                 </Button>
             </div>
         </div>
@@ -249,34 +249,34 @@ export default function QuizView({
 
   if (!currentQ && !isGeneratingPlaceholder) {
       return (
-          <div className="flex flex-col items-center justify-center py-40 gap-8 opacity-50">
-              <div className="w-20 h-20 border-8 border-black dark:border-white border-t-[var(--primary)] rounded-full animate-spin" />
-              <p className="font-black uppercase tracking-[0.4em] text-foreground text-xl">{t.note.quiz_content.waiting_modules}</p>
+          <div className="flex flex-col items-center justify-center py-32 gap-6 opacity-50">
+              <div className="w-16 h-16 border-4 border-border border-t-primary rounded-full animate-spin" />
+              <p className="font-bold uppercase tracking-[0.3em] text-foreground text-sm italic">{t.note.quiz_content.waiting_modules}</p>
           </div>
       );
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-10">
-        <div className="relative animate-in slide-in-from-bottom-10 fade-in duration-700">
+    <div className="max-w-4xl mx-auto py-6">
+        <div className="relative animate-in slide-in-from-bottom-6 fade-in duration-700">
             {/* Question Index Badge */}
-            <div className="absolute -top-10 -left-10 bg-foreground text-background font-black px-6 py-3 text-3xl italic border-4 border-black dark:border-white z-10 shadow-[8px_8px_0px_0px_var(--primary)] rotate-[-2deg]">
+            <div className="absolute -top-6 -left-4 bg-foreground text-background font-bold px-4 py-2 text-xl italic border-2 border-border z-10 shadow-[4px_4px_0px_0px_var(--primary)] rotate-[-1deg]">
                 {t.note.quiz_content.step} {currentIdx + 1}/{isGenerating ? "?" : questions.length}
             </div>
 
-            <div className="bg-background border-8 border-black dark:border-white p-10 md:p-20 shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] dark:shadow-[20px_20px_0px_0px_rgba(255,255,255,1)]">
+            <div className="bg-background border-4 border-border p-8 md:p-12 shadow-[12px_12px_0px_0px_var(--shadow)]">
                 {isGeneratingPlaceholder ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-8">
-                        <div className="w-24 h-24 border-[12px] border-black dark:border-white border-t-[var(--primary)] rounded-full animate-spin" />
-                        <h3 className="text-4xl font-black uppercase italic animate-pulse text-foreground tracking-tighter">{t.note.quiz_content.synthesizing_q} #{currentIdx + 1}...</h3>
+                    <div className="flex flex-col items-center justify-center py-16 gap-6">
+                        <div className="w-16 h-16 border-4 border-border border-t-primary rounded-full animate-spin" />
+                        <h3 className="text-2xl font-bold uppercase italic animate-pulse text-foreground tracking-tight">{t.note.quiz_content.synthesizing_q} #{currentIdx + 1}...</h3>
                     </div>
                 ) : (
                     <>
-                        <h3 className="text-3xl md:text-5xl font-black mb-16 leading-none uppercase italic tracking-tighter text-foreground drop-shadow-[4px_4px_0px_rgba(0,0,0,0.05)]">
+                        <h3 className="text-2xl md:text-3xl font-bold mb-10 leading-snug uppercase italic tracking-tighter text-foreground border-l-8 border-primary pl-6 py-2">
                             {currentQ?.question}
                         </h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {currentQ?.choices?.map((choice, cIdx) => {
                             const isCorrect = cIdx === currentQ.answer_index;
                             const isSelected = selectedIdx === cIdx;
@@ -287,21 +287,21 @@ export default function QuizView({
                                 disabled={isAnswered}
                                 onClick={() => handleSelect(cIdx)}
                                 className={cn(
-                                  "group relative p-8 border-4 border-black dark:border-white text-left transition-all duration-300 min-h-[120px]",
-                                  isSelected && !isAnswered && "bg-[var(--primary)] text-white shadow-[6px_6px_0px_0px_black] translate-x-[-2px] translate-y-[-2px]",
-                                  isAnswered && isCorrect && "bg-green-500 text-white shadow-[6px_6px_0px_0px_black] translate-x-[-2px] translate-y-[-2px]",
-                                  isAnswered && isSelected && !isCorrect && "bg-red-500 text-white shadow-[6px_6px_0px_0px_black] translate-x-[-2px] translate-y-[-2px]",
-                                  !isSelected && !isAnswered && "bg-background hover:bg-[var(--accent)] hover:shadow-[10px_10px_0px_0px_black] hover:translate-x-[-4px] hover:translate-y-[-4px] text-foreground"
+                                  "group relative p-6 border-2 border-border text-left transition-all duration-300 min-h-[100px] flex items-center shadow-[4px_4px_0px_0px_var(--shadow)]",
+                                  isSelected && !isAnswered && "bg-primary text-white translate-x-[-1px] translate-y-[-1px] shadow-none",
+                                  isAnswered && isCorrect && "bg-green text-white translate-x-[-1px] translate-y-[-1px] shadow-none",
+                                  isAnswered && isSelected && !isCorrect && "bg-orange text-white translate-x-[-1px] translate-y-[-1px] shadow-none",
+                                  !isSelected && !isAnswered && "bg-background hover:bg-accent hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--shadow)] text-foreground"
                                 )}
                               >
-                                <div className="flex items-start gap-6">
+                                <div className="flex items-start gap-4">
                                     <span className={cn(
-                                        "flex-shrink-0 w-10 h-10 flex items-center justify-center border-4 border-black font-black text-xl",
-                                        isSelected || (isAnswered && isCorrect) ? "bg-white text-black" : "bg-zinc-100 dark:bg-zinc-800"
+                                        "flex-shrink-0 w-8 h-8 flex items-center justify-center border-2 border-border font-bold text-sm",
+                                        isSelected || (isAnswered && isCorrect) ? "bg-white text-black" : "bg-secondary-background"
                                     )}>
                                         {String.fromCharCode(65 + cIdx)}
                                     </span>
-                                    <span className="font-black text-xl leading-tight uppercase tracking-tight">{choice}</span>
+                                    <span className="font-bold text-lg leading-tight uppercase tracking-tight italic">{choice}</span>
                                 </div>
                               </button>
                             );
@@ -309,26 +309,26 @@ export default function QuizView({
                         </div>
 
                         {isAnswered && (
-                            <div className="mt-16 p-10 bg-[var(--accent)]/10 dark:bg-zinc-900 border-8 border-black dark:border-white animate-in slide-in-from-top-8 duration-700 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] dark:shadow-[10px_10px_0px_0px_rgba(255,255,255,1)]">
-                                <div className="flex items-center gap-4 mb-6">
+                            <div className="mt-12 p-8 bg-accent/10 border-4 border-border animate-in slide-in-from-top-4 duration-700 shadow-[8px_8px_0px_0px_var(--shadow)]">
+                                <div className="flex items-center gap-3 mb-4">
                                     {selectedIdx === currentQ.answer_index 
-                                        ? <CheckCircle2 className="w-12 h-12 text-green-500" />
-                                        : <XCircle className="w-12 h-12 text-red-500" />
+                                        ? <CheckCircle2 className="w-8 h-8 text-green" />
+                                        : <XCircle className="w-8 h-8 text-orange" />
                                     }
-                                    <span className="font-black uppercase italic text-3xl text-foreground tracking-tighter">
+                                    <span className="font-bold uppercase italic text-2xl text-foreground tracking-tight">
                                         {selectedIdx === currentQ.answer_index ? t.note.quiz_content.sync_success : t.note.quiz_content.mismatch}
                                     </span>
                                 </div>
-                                <div className="p-8 bg-background border-4 border-black dark:border-white mb-8">
-                                    <p className="font-black text-xl leading-relaxed italic border-l-[12px] border-[var(--primary)] pl-8 text-foreground">
+                                <div className="p-6 bg-secondary-background border-2 border-border mb-6">
+                                    <p className="font-bold text-lg leading-relaxed italic border-l-4 border-primary pl-6 text-foreground/80">
                                         {currentQ.explanation}
                                     </p>
                                 </div>
                                 <button 
                                     onClick={handleNext}
-                                    className="w-full h-20 bg-foreground text-background font-black uppercase text-2xl tracking-widest flex items-center justify-center gap-4 hover:translate-x-[-4px] hover:translate-y-[-4px] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] transition-all"
+                                    className="w-full h-16 bg-foreground text-background font-bold uppercase text-xl tracking-widest flex items-center justify-center gap-3 hover:translate-x-[-2px] hover:translate-y-[-2px] shadow-[6px_6px_0px_0px_var(--shadow)] active:shadow-none active:translate-x-0 active:translate-y-0 transition-all"
                                 >
-                                    {currentIdx < questions.length - 1 ? t.note.quiz_content.next_module : (isGenerating ? t.note.quiz_content.wait_more : t.note.quiz_content.view_assessment)} <ArrowRight className="w-8 h-8" strokeWidth={4} />
+                                    {currentIdx < questions.length - 1 ? t.note.quiz_content.next_module : (isGenerating ? t.note.quiz_content.wait_more : t.note.quiz_content.view_assessment)} <ArrowRight className="w-6 h-6" strokeWidth={3} />
                                 </button>
                             </div>
                         )}

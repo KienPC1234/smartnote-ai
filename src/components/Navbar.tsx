@@ -1,11 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { Zap, Languages, User, Settings, LogOut, ChevronDown, AlertTriangle, BookOpen, Globe, Shield } from "lucide-react";
+import { Zap, Languages, User, Settings, LogOut, ChevronDown, AlertTriangle, BookOpen, Shield, Home } from "lucide-react";
 import { useTranslation } from "./LanguageProvider";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { EditProfileDialog } from "./EditProfileDialog";
@@ -26,53 +25,49 @@ export default function Navbar() {
   const { lang, setLang, t } = useTranslation();
 
   return (
-    <nav className="w-full border-b-2 border-black dark:border-white bg-background p-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-50 transition-colors">
+    <nav className="w-full border-b-[3px] border-foreground bg-background px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 transition-colors shadow-[0_4px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_4px_0_0_rgba(255,255,255,0.05)]">
+      {/* Logo Section */}
       <div className="flex items-center gap-4">
-        <Link href={session ? "/app" : "/"} className="flex items-center gap-5 group">
-            <div className="bg-[var(--primary)] p-2.5 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:rotate-[15deg] transition-transform duration-300">
-            <Zap className="w-6 h-6 text-white fill-current" />
+        <Link href={session ? "/app" : "/"} className="flex items-center gap-3 group">
+            <div className="bg-primary p-2 border-[3px] border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] group-hover:rotate-[10deg] transition-transform duration-300">
+              <Zap className="w-6 h-6 text-white fill-current" />
             </div>
-            <span className="text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none ml-1" style={{marginTop:"5px"}}>
-            Smart<span className="text-[var(--primary)]">Note</span>
+            <span className="text-2xl md:text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none hidden sm:block">
+              Smart<span className="text-primary">Note</span>
             </span>
         </Link>
       </div>
 
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-3 md:gap-5 items-center">
+        {/* Language Switcher */}
         <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
                 <Button
-                    variant="neutral"
-                    size="sm"
-                    className="border-2 border-black dark:border-white font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    variant="outline"
+                    className="border-[3px] border-foreground font-bold text-[10px] md:text-xs uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all h-10 px-3 md:px-5 bg-background text-foreground"
                 >
-                    <Languages className="w-4 h-4 mr-1" />
-                    {lang === "en" ? "English" : "Tiếng Việt"}
-                    <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
+                    <Languages className="w-4 h-4 mr-2 text-primary" />
+                    <span className="hidden md:inline">{lang === "en" ? "English" : "Tiếng Việt"}</span>
+                    <span className="md:hidden">{lang.toUpperCase()}</span>
+                    <ChevronDown className="w-3 h-3 ml-2 opacity-50" />
                 </Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
                 <DropdownMenu.Content
                     align="end"
                     sideOffset={8}
-                    className="min-w-[150px] bg-background border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] p-1 z-50 animate-in fade-in slide-in-from-top-2"
+                    className="min-w-[180px] bg-background border-[3px] border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-1 z-50 animate-in fade-in zoom-in-95"
                 >
-                    <DropdownMenu.Item asChild>
-                        <button
-                            onClick={() => setLang("en")}
-                            className={`w-full flex items-center gap-3 p-3 font-bold hover:bg-[var(--primary)] hover:text-white dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs ${lang === "en" ? "bg-[var(--primary)] text-white" : "text-foreground"}`}
-                        >
-                            🇺🇸 English
-                        </button>
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Item asChild>
-                        <button
-                            onClick={() => setLang("vi")}
-                            className={`w-full flex items-center gap-3 p-3 font-bold hover:bg-[var(--primary)] hover:text-white dark:hover:text-black outline-none transition-colors uppercase text-xs ${lang === "vi" ? "bg-[var(--primary)] text-white" : "text-foreground"}`}
-                        >
-                            🇻🇳 Tiếng Việt
-                        </button>
-                    </DropdownMenu.Item>
+                    <DropdownMenuItem 
+                      active={lang === "en"} 
+                      onClick={() => setLang("en")} 
+                      label="🇺🇸 ENGLISH" 
+                    />
+                    <DropdownMenuItem 
+                      active={lang === "vi"} 
+                      onClick={() => setLang("vi")} 
+                      label="🇻🇳 TIẾNG VIỆT" 
+                    />
                 </DropdownMenu.Content>
             </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -83,10 +78,10 @@ export default function Navbar() {
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
                 <button 
-                    className="flex items-center gap-3 border-2 border-black dark:border-white bg-background px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] outline-none transition-all"
+                    className="flex items-center gap-3 border-[3px] border-foreground bg-background px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none outline-none transition-all h-10"
                 >
                     <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                    <span className="font-black text-sm uppercase max-w-[120px] truncate text-foreground">
+                    <span className="font-black text-xs uppercase max-w-[100px] truncate text-foreground tracking-widest hidden md:block">
                         {session.user?.name || t.nav.member}
                     </span>
                     <ChevronDown className="w-4 h-4 opacity-50 text-foreground" />
@@ -97,98 +92,55 @@ export default function Navbar() {
                 <DropdownMenu.Content 
                     align="end" 
                     sideOffset={8}
-                    className="min-w-[220px] bg-background border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] p-1 z-50 animate-in fade-in slide-in-from-top-2"
+                    className="min-w-[240px] bg-background border-[3px] border-foreground shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-1 z-50 animate-in fade-in slide-in-from-top-4"
                 >
-                    <DropdownMenu.Item asChild>
-                        <Link 
-                            href="/app/profile" 
-                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--purple)] hover:text-white dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
-                        >
-                            <Shield className="w-5 h-5" />
-                            {t.nav.security} & {t.nav.profile}
-                        </Link>
-                    </DropdownMenu.Item>
-
+                    <NavDropdownItem href="/app" icon={<Zap className="w-5 h-5" />} label={t.nav.dashboard} color="hover:bg-green-500 hover:text-white" />
+                    <NavDropdownItem href="/" icon={<Home className="w-5 h-5" />} label={t.nav.landing} color="hover:bg-accent" />
+                    <NavDropdownItem href="/app/profile" icon={<Shield className="w-5 h-5" />} label={`${t.nav.security} & ${t.nav.profile}`} color="hover:bg-purple-500 hover:text-white" />
+                    
                     <DropdownMenu.Item asChild>
                         <EditProfileDialog>
-                            <button className="w-full flex items-center gap-3 p-4 font-bold hover:bg-[var(--accent)] hover:text-black dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs">
+                            <button className="w-full flex items-center gap-3 p-3 font-bold hover:bg-yellow-400 hover:text-black outline-none transition-colors border-b-2 border-foreground/5 uppercase text-[10px] text-foreground">
                                 <User className="w-5 h-5" />
                                 {t.nav.edit_profile}
                             </button>
                         </EditProfileDialog>
                     </DropdownMenu.Item>
                     
-                    <DropdownMenu.Item asChild>
-                        <Link 
-                            href="/app/management" 
-                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--primary)] hover:text-white dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
-                        >
-                            <Settings className="w-5 h-5" />
-                            {t.nav.management}
-                        </Link>
-                    </DropdownMenu.Item>
+                    <NavDropdownItem href="/app/management" icon={<Settings className="w-5 h-5" />} label={t.nav.management} color="hover:bg-primary hover:text-white" />
+                    <NavDropdownItem href="/app/guide" icon={<BookOpen className="w-5 h-5" />} label={t.nav.guide} color="hover:bg-blue-500 hover:text-white" />
 
-                    <DropdownMenu.Item asChild>
-                        <Link 
-                            href="/app/guide" 
-                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--purple)] hover:text-white dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
-                        >
-                            <BookOpen className="w-5 h-5" />
-                            {t.nav.guide}
-                        </Link>
-                    </DropdownMenu.Item>
-
-                    <DropdownMenu.Item asChild>
-                        <Link 
-                            href="/" 
-                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--accent)] hover:text-black dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
-                        >
-                            <Globe className="w-5 h-5" />
-                            {t.nav.landing}
-                        </Link>
-                    </DropdownMenu.Item>
-
-                    <DropdownMenu.Item asChild>
-                        <Link 
-                            href="/app" 
-                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--secondary)] hover:text-black dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
-                        >
-                            <Zap className="w-5 h-5" />
-                            {t.nav.dashboard}
-                        </Link>
-                    </DropdownMenu.Item>
-
-                    <DropdownMenu.Separator className="h-1 bg-black dark:bg-white/20 my-1" />
+                    <DropdownMenu.Separator className="h-1 bg-foreground/10 my-1" />
                     
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <button 
-                                className="w-full flex items-center gap-3 p-4 font-black text-red-500 hover:bg-red-500 hover:text-white outline-none transition-colors cursor-pointer uppercase text-xs"
+                                className="w-full flex items-center gap-3 p-3 font-bold text-red-500 hover:bg-red-500 hover:text-white outline-none transition-colors cursor-pointer uppercase text-[10px]"
                             >
                                 <LogOut className="w-5 h-5" />
                                 {t.nav.logOut}
                             </button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] bg-background">
+                        <AlertDialogContent className="border-[6px] border-foreground shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] dark:shadow-[15px_15px_0px_0px_rgba(255,255,255,0.1)] bg-background rounded-none">
                             <AlertDialogHeader>
-                                <AlertDialogTitle className="text-3xl font-black uppercase italic flex items-center gap-3 text-foreground">
-                                    <AlertTriangle className="w-8 h-8 text-[var(--primary)]" />
+                                <AlertDialogTitle className="text-3xl font-black uppercase italic flex items-center gap-3 text-foreground tracking-tighter">
+                                    <AlertTriangle className="w-8 h-8 text-primary" />
                                     {t.nav.logout_confirm_title}
                                 </AlertDialogTitle>
-                                <AlertDialogDescription className="font-bold text-zinc-600 dark:text-zinc-400 text-foreground">
+                                <AlertDialogDescription className="font-bold text-lg text-muted-foreground italic mt-2">
                                     {t.nav.logout_confirm_desc}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter className="gap-3">
+                            <AlertDialogFooter className="gap-4 mt-8">
                                 <AlertDialogCancel asChild>
-                                    <Button variant="neutral" className="border-2 border-black dark:border-white font-bold text-foreground">
+                                    <Button variant="outline" className="h-12 border-[3px] border-foreground font-black text-foreground bg-background uppercase hover:bg-muted">
                                         {t.common.cancel}
                                     </Button>
                                 </AlertDialogCancel>
                                 <AlertDialogAction asChild>
                                     <Button 
                                         onClick={() => signOut({ callbackUrl: "/" })}
-                                        className="bg-red-500 text-white border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black"
+                                        className="h-12 bg-red-500 text-white border-[3px] border-foreground shadow-[4px_4px_0px_0px_#000] font-black uppercase active:translate-x-1 active:translate-y-1 active:shadow-none"
                                     >
                                         {t.nav.logOut}
                                     </Button>
@@ -200,14 +152,14 @@ export default function Navbar() {
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
         ) : (
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-4">
             <Link href="/auth/signin">
-                <Button variant="neutral" size="sm" className="font-bold border-2 border-black dark:border-white text-foreground bg-background">
+                <Button variant="outline" className="h-10 px-4 md:px-6 font-bold border-[3px] border-foreground text-foreground bg-background uppercase shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-[10px] md:text-xs">
                 {t.nav.signIn}
                 </Button>
             </Link>
             <Link href="/auth/signup">
-                <Button variant="default" size="sm" className="font-bold border-2 border-black dark:border-white bg-[var(--secondary)] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <Button className="h-10 px-4 md:px-6 font-bold border-[3px] border-foreground bg-primary text-white shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all uppercase text-[10px] md:text-xs">
                 {t.nav.signUp}
                 </Button>
             </Link>
@@ -215,5 +167,34 @@ export default function Navbar() {
         )}
       </div>
     </nav>
+  );
+}
+
+// Sub-components trợ giúp để code sạch hơn
+function DropdownMenuItem({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
+  return (
+    <DropdownMenu.Item asChild>
+      <button
+          onClick={onClick}
+          className={`w-full flex items-center justify-between p-3 font-bold outline-none transition-all mb-1 uppercase text-[10px] ${active ? "bg-primary text-white shadow-[2px_2px_0px_0px_#000]" : "text-foreground hover:bg-primary/10"}`}
+      >
+          {label}
+          {active && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
+      </button>
+    </DropdownMenu.Item>
+  );
+}
+
+function NavDropdownItem({ href, icon, label, color }: { href: string, icon: React.ReactNode, label: string, color: string }) {
+  return (
+    <DropdownMenu.Item asChild>
+        <Link 
+            href={href} 
+            className={`flex items-center gap-3 p-3 font-bold outline-none transition-colors border-b-2 border-foreground/5 uppercase text-[10px] text-foreground ${color}`}
+        >
+            {icon}
+            {label}
+        </Link>
+    </DropdownMenu.Item>
   );
 }

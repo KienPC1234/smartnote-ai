@@ -1,145 +1,179 @@
 "use client";
 
-import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useTransition } from "react";
+import { 
+    User, Mail, Shield, ShieldCheck, Key, 
+    Smartphone, History, AlertTriangle, 
+    ArrowRight, Loader2, LogOut, CheckCircle2,
+    Calendar, Globe, Bell, Lock
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { User as UserIcon, Mail, Shield, LogOut, ArrowLeft, Save, Loader2, Key, Send } from "lucide-react";
-import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { useAlert } from "@/components/GlobalAlert";
-import { useTranslation } from "@/components/LanguageProvider";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/LanguageProvider";
 
 export default function ProfilePage() {
-  const { data: session, update } = useSession();
-  const { t } = useTranslation();
-  const { showAlert } = useAlert();
-  const [name, setName] = useState(session?.user?.name || "");
-  const [isUpdating, setIsUpdating] = useState(false);
-  
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [otp, setOtp] = useState("");
-  const [isChangingPass, setIsChangingPass] = useState(false);
-  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+    const { data: session } = useSession();
+    const { t } = useTranslation();
+    const [isPending, startTransition] = useTransition();
 
-  if (!session) return null;
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
-  async function requestOtp() {
-    setIsRequestingOtp(true);
-    try {
-        const res = await fetch("/api/auth/otp/request", { method: "POST" });
-        if (res.ok) toast.success(t.profile.toast_otp_success);
-    } catch (e) { toast.error(t.common.error); }
-    finally { setIsRequestingOtp(false); }
-  }
-
-  async function handleUpdateName() {
-    if (!name || name === session?.user?.name) return;
-    setIsUpdating(true);
-    try {
-        const res = await fetch("/api/user/profile", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name })
-        });
-        if (res.ok) {
-            await update({ name }); 
-            toast.success(t.profile.toast_update_success);
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            return toast.error("Passwords do not match");
         }
-    } catch (e) { toast.error(t.common.error); }
-    finally { setIsUpdating(false); }
-  }
 
-  async function handleChangePassword() {
-    if (!currentPassword || !newPassword || !otp) return toast.error("Input Error", { description: "Fill all fields + OTP code." });
-    setIsChangingPass(true);
-    try {
-        const res = await fetch("/api/user/password", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ currentPassword, newPassword, otp })
+        startTransition(async () => {
+            try {
+                const res = await fetch("/api/user/password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+                if (!res.ok) throw new Error("Failed to update password");
+                toast.success("Password secured.");
+                setOldPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+            } catch (e) {
+                toast.error("Security breach. Could not update.");
+            }
         });
-        const data = await res.json();
-        if (res.ok) {
-            toast.success(t.profile.toast_pass_success);
-            setCurrentPassword(""); setNewPassword(""); setOtp("");
-        } else { toast.error("Auth Error", { description: data.error }); }
-    } catch (e) { toast.error(t.common.error); }
-    finally { setIsChangingPass(false); }
-  }
+    };
 
-  return (
-    <div className="max-w-3xl mx-auto space-y-8 relative pb-20">
-      <div className="flex items-center justify-between relative z-10">
-        <Link href="/app">
-          <Button variant="neutral" size="sm" className="font-bold border-2 border-black dark:border-white text-foreground">
-            <ArrowLeft className="mr-2 w-4 h-4" /> {t.profile.back_btn}
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-black italic tracking-tighter uppercase text-foreground">{t.profile.title}</h1>
-      </div>
+    if (!session) return null;
 
-      <div className="grid grid-cols-1 gap-8">
-        {/* Name Control */}
-        <Card className="border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_var(--primary)] bg-background">
-            <div className="bg-[var(--primary)] p-4 border-b-4 border-black dark:border-white font-black text-white italic">{t.profile.identifier_title}</div>
-            <CardContent className="p-6 space-y-4">
-                <div className="flex gap-2">
-                    <Input 
-                        value={name} 
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder={t.profile.id_placeholder}
-                        className="border-2 border-black dark:border-white font-black h-12 text-foreground"
-                    />
-                    <Button onClick={handleUpdateName} disabled={isUpdating} className="border-2 border-black dark:border-white bg-foreground text-background">
-                        {isUpdating ? <Loader2 className="animate-spin" /> : <Save />}
-                    </Button>
+    return (
+        <div className="max-w-6xl mx-auto space-y-12 pb-20 px-4 pt-10">
+            {/* Page Header */}
+            <div className="border-b-8 border-border pb-10">
+                <div className="flex items-center gap-4 text-purple font-black uppercase tracking-[0.3em] text-sm mb-4">
+                    <ShieldCheck className="w-6 h-6" />
+                    Security Protocol Alpha
                 </div>
-                <div className="text-xs font-bold opacity-50 italic text-foreground">Link: {session.user?.email}</div>
-            </CardContent>
-        </Card>
+                <h1 className="text-6xl md:text-7xl font-black uppercase italic tracking-tighter text-foreground leading-none">
+                    User <span className="text-primary drop-shadow-[6px_6px_0px_var(--shadow)]">Control</span>
+                </h1>
+            </div>
 
-        {/* Security Control */}
-        {!session.user?.image && (
-            <Card className="border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_var(--purple)] bg-background">
-                <div className="bg-[var(--purple)] p-4 border-b-4 border-black dark:border-white font-black text-white italic flex justify-between items-center">
-                    {t.profile.security_title}
-                    <Button onClick={requestOtp} disabled={isRequestingOtp} size="sm" className="bg-background text-foreground border-2 border-black dark:border-white font-black text-[10px]">
-                        {isRequestingOtp ? t.profile.sending_otp : t.profile.get_otp}
-                    </Button>
-                </div>
-                <CardContent className="p-6 space-y-4">
-                    <Input 
-                        type="password" placeholder={t.profile.current_pass} 
-                        value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
-                        className="border-2 border-black dark:border-white font-bold text-foreground"
-                    />
-                    <Input 
-                        type="password" placeholder={t.profile.new_pass} 
-                        value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                        className="border-2 border-black dark:border-white font-bold text-foreground"
-                    />
-                    <div className="flex gap-2">
-                        <Input 
-                            placeholder={t.profile.otp_placeholder} 
-                            value={otp} onChange={e => setOtp(e.target.value)}
-                            className="border-2 border-black dark:border-white font-black text-center tracking-[10px] text-foreground"
-                        />
-                        <Button onClick={handleChangePassword} disabled={isChangingPass} className="bg-foreground text-background border-2 border-black dark:border-white font-black">
-                            {isChangingPass ? <Loader2 className="animate-spin" /> : t.profile.update_btn}
-                        </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                {/* Left Column: Identity Card */}
+                <div className="lg:col-span-4 space-y-8">
+                    <Card className="border-4 border-border bg-background shadow-[12px_12px_0px_0px_var(--shadow)] overflow-hidden">
+                        <div className="h-32 bg-primary border-b-4 border-border relative">
+                            <div className="absolute -bottom-12 left-8 p-2 bg-background border-4 border-border shadow-[4px_4px_0px_0px_var(--shadow)]">
+                                <User className="w-20 h-20 text-foreground" strokeWidth={3} />
+                            </div>
+                        </div>
+                        <CardContent className="pt-16 pb-8 px-8 space-y-6 bg-background">
+                            <div>
+                                <h2 className="text-3xl font-black uppercase italic text-foreground tracking-tight">{session.user?.name}</h2>
+                                <p className="text-foreground/50 font-bold uppercase text-[10px] tracking-widest mt-1">Verified Network Member</p>
+                            </div>
+                            
+                            <div className="space-y-4 border-t-4 border-border/10 pt-6">
+                                <div className="flex items-center gap-3 text-foreground/70">
+                                    <Mail className="w-5 h-5 text-primary" />
+                                    <span className="font-bold text-sm truncate">{session.user?.email}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-foreground/70">
+                                    <Calendar className="w-5 h-5 text-purple" />
+                                    <span className="font-bold text-sm uppercase">Active since 2026</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-foreground/70">
+                                    <Globe className="w-5 h-5 text-green" />
+                                    <span className="font-bold text-sm uppercase">Region: Global-01</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-foreground/5 p-4 border-2 border-border/10 italic text-[10px] font-bold text-foreground/40 leading-relaxed uppercase">
+                                Neural ID: {session.user?.id?.slice(0, 12)}...
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 border-4 border-border bg-background shadow-[4px_4px_0px_0px_var(--blue)]">
+                            <p className="text-[10px] font-black uppercase opacity-50 mb-1">Alerts</p>
+                            <p className="text-2xl font-black text-foreground">0</p>
+                        </div>
+                        <div className="p-4 border-4 border-border bg-background shadow-[4px_4px_0px_0px_var(--orange)]">
+                            <p className="text-[10px] font-black uppercase opacity-50 mb-1">Access</p>
+                            <p className="text-2xl font-black text-foreground">L-5</p>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
-        )}
+                </div>
 
-        <Button onClick={() => signOut({ callbackUrl: "/" })} className="bg-red-500 text-white border-4 border-black h-16 font-black italic shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]">
-            <LogOut className="mr-2" /> {t.profile.logout_btn}
-        </Button>
-      </div>
-    </div>
-  );
+                {/* Right Column: Settings */}
+                <div className="lg:col-span-8 space-y-10">
+                    {/* Password Section */}
+                    <Card className="border-4 border-border bg-background shadow-[15px_15px_0px_0px_var(--shadow)] overflow-hidden">
+                        <CardHeader className="bg-secondary-background border-b-4 border-border p-8">
+                            <CardTitle className="text-3xl font-black uppercase italic flex items-center gap-4 text-foreground tracking-tighter">
+                                <Lock className="w-8 h-8 text-primary" strokeWidth={3} />
+                                Update Access Key
+                            </CardTitle>
+                            <CardDescription className="font-bold text-foreground/50 uppercase text-xs tracking-widest mt-2">Modify your authentication credentials</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 bg-background">
+                            <form onSubmit={handlePasswordChange} className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3 md:col-span-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">{t.profile.current_pass}</Label>
+                                        <Input 
+                                            type="password"
+                                            value={oldPassword}
+                                            onChange={(e) => setOldPassword(e.target.value)}
+                                            className="h-14 border-4 border-border bg-secondary-background text-foreground font-bold text-lg focus-visible:ring-0 focus-visible:border-primary rounded-none shadow-[inner_4px_4px_0px_0px_rgba(0,0,0,0.05)]"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">{t.profile.new_pass}</Label>
+                                        <Input 
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            className="h-14 border-4 border-border bg-secondary-background text-foreground font-bold text-lg focus-visible:ring-0 focus-visible:border-primary rounded-none shadow-[inner_4px_4px_0px_0px_rgba(0,0,0,0.05)]"
+                                            placeholder="ENTER NEW PASSWORD"
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">{t.profile.confirm_pass}</Label>
+                                        <Input 
+                                            type="password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="h-14 border-4 border-border bg-secondary-background text-foreground font-bold text-lg focus-visible:ring-0 focus-visible:border-primary rounded-none shadow-[inner_4px_4px_0px_0px_rgba(0,0,0,0.05)]"
+                                            placeholder="REPEAT TO CONFIRM"
+                                        />
+                                    </div>
+                                </div>
+                                <Button 
+                                    disabled={isPending}
+                                    className="h-16 px-10 bg-primary text-white border-4 border-border shadow-[6px_6px_0px_0px_var(--shadow)] font-black uppercase italic text-xl hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rounded-none w-full md:w-auto"
+                                >
+                                    {isPending ? <Loader2 className="animate-spin w-6 h-6 mr-3" /> : <Key className="w-6 h-6 mr-3" />}
+                                    Commit Security Update
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+
+                    {/* Hint Box */}
+                    <div className="p-6 border-4 border-border bg-accent/20 italic text-sm font-bold text-foreground/60 flex gap-4">
+                        <AlertTriangle className="w-10 h-10 text-primary shrink-0" />
+                        <p>Note: Passwords must be at least 8 characters long. Your session will remain active after password update unless you sign out manually.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

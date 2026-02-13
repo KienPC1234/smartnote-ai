@@ -22,6 +22,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SmartNote AI",
   description: "Study smarter with AI-powered notes",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

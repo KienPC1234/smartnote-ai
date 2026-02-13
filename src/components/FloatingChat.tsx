@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useRef, useEffect } from "react";
 import { X, Send, Bot, User, Loader2, Sparkles, HelpCircle, ChevronDown, ChevronUp, Image as ImageIcon } from "lucide-react";
@@ -10,11 +10,10 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import Link from "next/link";
-import { useAlert } from "@/components/GlobalAlert";
-import { processFile } from "@/lib/file-processor";
 import { useTranslation } from "./LanguageProvider";
 import { toast } from "sonner";
 
+// ... (Interface Message không đổi)
 interface Message {
   role: string;
   content: string;
@@ -32,7 +31,6 @@ export function FloatingChat() {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Use a localized config with fallbacks to avoid crashes
   const chatConfig = t?.global_chat || {
     title: "NEURAL BRAIN",
     welcome: "Neural network online. Ask me about your nodes.",
@@ -45,14 +43,13 @@ export function FloatingChat() {
     ocr_success: "OCR Success",
     ocr_error: "OCR Error",
     ocr_desc: "Extracted content from {count} images.",
-    ocr_fail_desc: "Optical sensor failure."
+    ocr_fail_desc: "Optical sensor failure.",
+    neural_error: "Neural Error"
   };
 
   useEffect(() => {
     const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
+    if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
   }, [messages, isLoading]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -112,7 +109,6 @@ export function FloatingChat() {
     }
 
     setInput("");
-    // Clean up previews
     uploadedImages.forEach(img => URL.revokeObjectURL(img.preview));
     setUploadedImages([]);
     
@@ -188,13 +184,16 @@ export function FloatingChat() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-8 right-8 flex flex-col items-end gap-4 z-50">
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-4 z-50">
         <Link href="/app/guide">
-            <button className="w-12 h-12 bg-background border-2 border-black dark:border-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
-                <HelpCircle className="w-6 h-6 text-foreground" />
+            <button className="w-12 h-12 bg-background border-[3px] border-foreground rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all group">
+                <HelpCircle className="w-6 h-6 text-foreground group-hover:text-primary transition-colors" />
             </button>
         </Link>
-        <button onClick={() => setIsOpen(true)} className="w-16 h-16 bg-[var(--primary)] border-4 border-black dark:border-white rounded-full flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all group">
+        <button 
+          onClick={() => setIsOpen(true)} 
+          className="w-16 h-16 bg-primary border-[4px] border-foreground rounded-full flex items-center justify-center shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all group"
+        >
             <Sparkles className="w-8 h-8 text-white group-hover:rotate-12 transition-transform" />
         </button>
       </div>
@@ -202,39 +201,39 @@ export function FloatingChat() {
   }
 
   return (
-    <div className="fixed bottom-8 right-8 w-[500px] max-w-[95vw] h-[700px] max-h-[85vh] flex flex-col z-50 animate-in slide-in-from-bottom-4">
-      <Card className="flex-1 border-4 border-black dark:border-white flex flex-col bg-background shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] overflow-hidden">
-        <CardHeader className="bg-[var(--secondary)] border-b-4 border-black dark:border-white flex flex-row items-center justify-between p-4 space-y-0">
-          <CardTitle className="text-xl font-black italic flex items-center gap-2 text-black">
+    <div className="fixed bottom-6 right-6 w-[450px] max-w-[95vw] h-[650px] max-h-[85vh] flex flex-col z-50 animate-in slide-in-from-bottom-6">
+      <Card className="flex-1 border-[4px] border-foreground flex flex-col bg-background shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.1)] overflow-hidden">
+        <CardHeader className="bg-primary border-b-[4px] border-foreground flex flex-row items-center justify-between p-4 space-y-0 text-white">
+          <CardTitle className="text-lg font-black italic flex items-center gap-2 uppercase tracking-tighter">
             <Bot className="w-6 h-6" /> {chatConfig.title}
           </CardTitle>
-          <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform p-1">
-            <X className="w-6 h-6 text-black" />
+          <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform p-1 bg-black/10 rounded-lg">
+            <X className="w-6 h-6 text-white" />
           </button>
         </CardHeader>
         
-        <ScrollArea className="flex-1 bg-zinc-50 dark:bg-zinc-900/50">
+        <ScrollArea className="flex-1 bg-muted/20">
           <CardContent className="p-4 space-y-6">
             {messages.length === 0 && (
-              <div className="text-center py-10 opacity-40 font-bold italic text-sm text-foreground">
+              <div className="text-center py-20 px-10 opacity-40 font-black italic text-sm uppercase tracking-widest leading-relaxed">
                   {chatConfig.welcome}
               </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`p-4 border-2 border-black dark:border-white max-w-[95%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]
-                  ${m.role === 'user' ? 'bg-[var(--accent)] text-black' : 'bg-background text-foreground'}
+                <div className={`group relative p-4 border-[3px] border-foreground max-w-[90%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]
+                  ${m.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-background text-foreground'}
                 `}>
-                  <div className={`flex items-center gap-2 mb-2 opacity-50 uppercase text-[10px] font-black tracking-widest ${m.role === 'user' ? 'text-black' : 'text-foreground'}`}>
+                  <div className={`flex items-center gap-2 mb-3 opacity-60 uppercase text-[9px] font-black tracking-[0.2em] ${m.role === 'user' ? 'text-white' : 'text-primary'}`}>
                       {m.role === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
                       {m.role === 'user' ? chatConfig.student_label : chatConfig.assistant_label}
                   </div>
 
                   {m.reasoning && (
-                    <div className="mb-4 bg-zinc-100 dark:bg-zinc-900/50 border-2 border-black/10 dark:border-white/10 p-3 rounded-lg text-foreground">
+                    <div className="mb-4 bg-muted border-2 border-foreground/10 p-3 rounded shadow-inner">
                         <button 
                             onClick={() => toggleThinking(i)}
-                            className="flex items-center justify-between w-full text-[10px] font-black uppercase text-zinc-500 hover:text-[var(--primary)] transition-colors"
+                            className="flex items-center justify-between w-full text-[9px] font-black uppercase text-muted-foreground hover:text-primary transition-colors"
                         >
                             <span className="flex items-center gap-2">
                                 <Loader2 className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
@@ -243,48 +242,37 @@ export function FloatingChat() {
                             {m.isThinkingOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                         {m.isThinkingOpen && (
-                            <div className="mt-3 text-[11px] font-bold text-zinc-500 italic leading-relaxed border-t border-black/5 dark:border-white/5 pt-2 animate-in fade-in slide-in-from-top-1">
+                            <div className="mt-3 text-[10px] font-bold text-muted-foreground italic leading-relaxed border-t border-foreground/5 pt-2 animate-in fade-in duration-300">
                                 {m.reasoning}
                             </div>
                         )}
                     </div>
                   )}
 
-                  <div className="prose prose-sm dark:prose-invert max-w-none font-medium leading-relaxed overflow-x-auto text-current">
-                      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  <div className={`prose prose-sm dark:prose-invert max-w-none font-bold italic leading-relaxed text-current
+                    ${m.role === 'user' ? 'prose-p:text-white' : ''}`}>
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm, remarkMath]} 
+                        rehypePlugins={[[rehypeKatex, { output: 'html', strict: false }]]}
+                      >
                           {m.content}
                       </ReactMarkdown>
                   </div>
                 </div>
               </div>
             ))}
-            {isLoading && messages[messages.length-1]?.role === "user" && (
-              <div className="flex justify-start animate-in fade-in">
-                  <div className="p-4 border-2 border-black dark:border-white bg-background text-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                      <div className="flex gap-1 font-black text-xs uppercase tracking-widest">
-                        <span>{chatConfig.thinking}</span>
-                        <span className="animate-bounce">.</span>
-                        <span className="animate-bounce [animation-delay:0.2s]">.</span>
-                        <span className="animate-bounce [animation-delay:0.4s]">.</span>
-                      </div>
-                  </div>
-              </div>
-            )}
           </CardContent>
         </ScrollArea>
 
-        <div className="p-4 border-t-4 border-black dark:border-white flex flex-col gap-2 bg-background">
-          {/* Image Preview Bar */}
+        {/* Input Area */}
+        <div className="p-4 border-t-[4px] border-foreground bg-background space-y-3">
           {uploadedImages.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white">
+              <div className="flex gap-2 overflow-x-auto pb-2">
                   {uploadedImages.map((img) => (
                       <div key={img.id} className="relative shrink-0">
-                          <img src={img.preview} alt="OCR Preview" className="w-12 h-12 object-cover border-2 border-black rounded shadow-[2px_2px_0px_0px_#000]" />
-                          <button 
-                            onClick={() => removeImage(img.id)}
-                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 border border-black shadow-[1px_1px_0px_0px_#000]"
-                          >
-                              <X className="w-2 h-2" />
+                          <img src={img.preview} alt="OCR" className="w-12 h-12 object-cover border-2 border-foreground shadow-[2px_2px_0px_0px_#000]" />
+                          <button onClick={() => removeImage(img.id)} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 border-2 border-foreground shadow-sm hover:scale-110 transition-transform">
+                              <X className="w-2.5 h-2.5" />
                           </button>
                       </div>
                   ))}
@@ -292,15 +280,11 @@ export function FloatingChat() {
           )}
 
           <div className="flex gap-2">
-            <input 
-                type="file" hidden ref={fileInputRef} 
-                onChange={handleImageUpload} accept="image/*"
-                multiple
-            />
+            <input type="file" hidden ref={fileInputRef} onChange={handleImageUpload} accept="image/*" multiple />
             <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading || isProcessingImage}
-                className="w-12 h-12 border-2 border-black dark:border-white bg-background text-foreground flex items-center justify-center hover:bg-[var(--accent)] transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]"
+                className="w-12 h-12 shrink-0 border-[3px] border-foreground bg-yellow-400 text-black flex items-center justify-center hover:translate-y-[-2px] transition-transform shadow-[3px_3px_0px_0px_#000] active:shadow-none active:translate-y-0"
             >
                 {isProcessingImage ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
             </button>
@@ -309,13 +293,12 @@ export function FloatingChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder={isProcessingImage ? chatConfig.ocr_placeholder : chatConfig.placeholder}
-                disabled={isProcessingImage}
-                className="flex-1 h-12 px-4 border-2 border-black dark:border-white bg-background text-foreground font-black text-xs outline-none focus:bg-zinc-50 dark:focus:bg-zinc-800 transition-colors"
+                className="flex-1 h-12 px-4 border-[3px] border-foreground bg-muted/50 text-foreground font-bold text-xs outline-none focus:bg-background transition-colors placeholder:italic placeholder:opacity-50"
             />
             <button 
                 onClick={handleSend} 
                 disabled={isLoading || isProcessingImage} 
-                className="w-12 h-12 bg-foreground text-background border-2 border-black dark:border-white flex items-center justify-center hover:bg-[var(--primary)] transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]"
+                className="w-12 h-12 shrink-0 bg-primary text-white border-[3px] border-foreground flex items-center justify-center hover:translate-y-[-2px] transition-transform shadow-[3px_3px_0px_0px_#000] active:shadow-none active:translate-y-0"
             >
                 <Send className="w-5 h-5" />
             </button>

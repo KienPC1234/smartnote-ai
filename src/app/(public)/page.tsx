@@ -1,146 +1,191 @@
-"use client";
+'use client';
 
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Sparkles, BookOpen, Zap, BrainCircuit, Play } from "lucide-react";
+import { ArrowRight, Sparkles, BookOpen, Zap, BrainCircuit, Play, Mail, Heart } from "lucide-react";
 import { useTranslation } from "@/components/LanguageProvider";
 
 export default function LandingPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden relative">
-      {/* Background Grid - Removed local div since it is global */}
+    <div className="min-h-screen flex flex-col relative bg-background text-foreground transition-colors duration-300 font-sans selection:bg-primary selection:text-white">
+      
+      {/* 1. BACKGROUND Ô LI - NHẠT & CHUYỂN MÀU THEO THEME */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.4] dark:opacity-[0.1]" 
+        style={{ 
+          backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`, 
+          backgroundSize: '40px 40px',
+          color: 'var(--border)'
+        }}
+      />
 
       <Navbar />
       
-      {/* Marquee - Thinner & Cleaner */}
-      <div className="border-b-4 border-black dark:border-white bg-[var(--purple)] text-white overflow-hidden py-2 select-none relative z-10">
-        <div className="animate-marquee font-black text-sm uppercase tracking-[0.3em] italic">
-           {t.landing.marquee}
+      {/* 2. MARQUEE - CHẬM & THANH LỊCH (Tốc độ 40s) */}
+      <div className="border-y-[3px] border-foreground bg-indigo-600 dark:bg-indigo-500 text-white overflow-hidden py-3 select-none relative z-20 shadow-[0_4px_0_0_rgba(0,0,0,1)] dark:shadow-[0_4px_0_0_rgba(255,255,255,0.1)]">
+        <div className="animate-marquee-slow font-black text-sm uppercase tracking-[0.3em] italic whitespace-nowrap">
+           {t.landing.marquee} &nbsp; • &nbsp; {t.landing.marquee} &nbsp; • &nbsp; {t.landing.marquee} &nbsp; • &nbsp; {t.landing.marquee}
         </div>
       </div>
 
-      <main className="flex-1 flex flex-col items-center relative z-10">
+      <main className="flex-1 flex flex-col items-center relative z-10 w-full">
         
-        {/* Hero Section */}
-        <section className="pt-32 pb-20 px-4 w-full max-w-7xl mx-auto flex flex-col items-center text-center space-y-10">
-            <div className="inline-flex items-center gap-3 px-6 py-2 border-4 border-black dark:border-white bg-[var(--accent)] text-black font-black text-xs uppercase tracking-[0.2em] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-bounce">
-                <Sparkles className="w-5 h-5" />
+        {/* 3. HERO SECTION - FIX TRÀN CHỮ & KÉO AI LÊN DÒNG */}
+        <section className="pt-20 pb-16 px-6 w-full max-w-6xl mx-auto flex flex-col items-center text-center">
+            {/* Badge - Chữ đen trên nền vàng (Luôn dễ đọc ở cả 2 theme) */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-foreground bg-yellow-400 text-black font-black text-[10px] md:text-xs uppercase tracking-widest shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] mb-10 transform -rotate-1">
+                <Sparkles className="w-4 h-4 fill-current" />
                 {t.landing.hero_badge}
             </div>
 
-            <div className="relative">
-                <h1 className="text-8xl md:text-[14rem] font-black tracking-tighter leading-[0.75] mb-6 select-none uppercase italic">
-                    <span className="text-foreground drop-shadow-[10px_10px_0px_rgba(0,0,0,0.1)]">{t.landing.hero_title_1}</span> <br/>
-                    <span className="text-[var(--primary)] drop-shadow-[12px_12px_0px_rgba(0,0,0,1)] dark:drop-shadow-[12px_12px_0px_rgba(255,255,255,0.2)]">
-                        {t.landing.hero_title_2}
+            <div className="w-full">
+                {/* Dùng break-words và điều chỉnh size chữ để không tràn màn hình */}
+                <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8 uppercase italic break-words">
+                    <span className="text-foreground">{t.landing.hero_title_1}</span> 
+                    <span className="inline-block md:ml-4 text-white bg-indigo-600 dark:bg-indigo-500 px-4 py-1 border-[4px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[6px_6px_0_0_rgba(255,255,255,0.2)] transform rotate-1">
+                      {t.landing.hero_title_2}
                     </span> 
                 </h1>
-                <p className="max-w-2xl mx-auto text-2xl md:text-3xl font-black text-zinc-600 dark:text-zinc-400 leading-none pt-8 uppercase italic tracking-tighter">
+                
+                <p className="max-w-2xl mx-auto text-base md:text-xl font-bold text-muted-foreground leading-relaxed pt-4 uppercase italic">
                     {t.landing.hero_desc.split('{structured}')[0]}
-                    <span className="text-foreground dark:text-white underline decoration-[var(--secondary)] decoration-8 underline-offset-4">
+                    <span className="text-foreground bg-yellow-200 dark:bg-yellow-500/30 px-2 border-b-4 border-yellow-400">
                         {t.landing.hero_desc_highlight}
                     </span>
                     {t.landing.hero_desc.split('{structured}')[1]}
                 </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-8 pt-10">
-                <Link href="/auth/signup">
-                    <Button size="lg" className="h-24 px-16 text-3xl font-black border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-6px] hover:translate-y-[-6px] transition-all active:translate-x-[4px] active:translate-y-[4px] bg-[var(--primary)] text-white hover:bg-[var(--primary)]">
+            <div className="flex flex-col sm:flex-row gap-6 pt-12 w-full justify-center items-center">
+                <Link href="/auth/signup" className="w-full sm:w-auto">
+                    <Button className="w-full sm:w-64 h-16 text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-indigo-600 text-white uppercase italic">
                         {t.landing.hero_cta}
-                        <ArrowRight className="ml-3 w-10 h-10" strokeWidth={4} />
+                        <ArrowRight className="ml-2 w-6 h-6" strokeWidth={4} />
                     </Button>
                 </Link>
-                <Link href="/demo_video">
-                    <Button variant="neutral" size="lg" className="h-24 px-16 text-2xl font-black border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-6px] hover:translate-y-[-6px] transition-all bg-background text-foreground">
-                        <Play className="mr-3 w-8 h-8 fill-current" />
+                <Link href="/demo_video" className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-64 h-16 text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-background text-foreground uppercase italic">
+                        <Play className="mr-2 w-5 h-5 fill-current" />
                         {t.landing.demo_video}
                     </Button>
                 </Link>
             </div>
         </section>
 
-        {/* Video Embed Section */}
-        <section className="py-32 px-4 w-full max-w-6xl mx-auto relative z-10">
-            <div className="border-[12px] border-black dark:border-white shadow-[30px_30px_0px_0px_var(--primary)] bg-background overflow-hidden relative group hover:translate-x-[-10px] hover:translate-y-[-10px] transition-all duration-500">
-                <div className="aspect-video w-full">
+        {/* 4. VIDEO SECTION */}
+        <section className="py-16 px-6 w-full max-w-4xl mx-auto">
+            <div className="border-[4px] border-foreground shadow-[12px_12px_0_0_var(--primary)] bg-background overflow-hidden transform rotate-1 transition-transform hover:rotate-0 duration-500">
+                <div className="h-8 border-b-[4px] border-foreground bg-muted flex items-center px-4 gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 border border-foreground" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-foreground" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 border border-foreground" />
+                </div>
+                <div className="aspect-video w-full bg-black">
                     <iframe 
                         className="w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
                         src={`https://www.youtube.com/embed/${process.env.NEXT_PUBLIC_YOUTUBE_ID || 'dQw4w9WgXcQ'}`}
                         title="SmartNote AI Demo"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                     ></iframe>
                 </div>
             </div>
         </section>
 
-        {/* Features Grid */}
-        <section className="py-24 px-4 w-full max-w-7xl mx-auto pb-60">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                
-                {/* Outline Card */}
-                <Card className="group bg-background border-4 border-black dark:border-white shadow-[15px_15px_0px_0px_var(--accent)] transition-all duration-500 hover:rotate-3 hover:shadow-[25px_25px_0px_0px_var(--accent)]">
-                    <CardHeader className="pt-12 px-10">
-                        <div className="h-20 w-20 bg-[var(--accent)] border-4 border-black dark:border-white rounded-2xl mb-8 flex items-center justify-center text-black shadow-[6px_6px_0px_0px_#000] group-hover:-rotate-12 transition-transform">
-                            <BookOpen className="w-10 h-10" strokeWidth={4} />
-                        </div>
-                        <CardTitle className="text-4xl font-black uppercase tracking-tighter text-foreground italic leading-none">{t.landing.feature_outline_title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-12 px-10">
-                        <p className="font-black text-xl text-zinc-700 dark:text-zinc-400 leading-tight">
-                            {t.landing.feature_outline_desc}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* Flashcards Card */}
-                <Card className="group bg-background border-4 border-black dark:border-white shadow-[15px_15px_0px_0px_var(--secondary)] transition-all duration-500 hover:-rotate-3 hover:shadow-[25px_25px_0px_0px_var(--secondary)]">
-                    <CardHeader className="pt-12 px-10">
-                        <div className="h-20 w-20 bg-[var(--secondary)] border-4 border-black dark:border-white rounded-2xl mb-8 flex items-center justify-center text-black shadow-[6px_6px_0px_0px_#000] group-hover:rotate-12 transition-transform">
-                            <Zap className="w-10 h-10 stroke-black fill-black" strokeWidth={4} />
-                        </div>
-                        <CardTitle className="text-4xl font-black uppercase tracking-tighter text-foreground italic leading-none">{t.landing.feature_cards_title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-12 px-10">
-                        <p className="font-black text-xl text-zinc-700 dark:text-zinc-400 leading-tight">
-                            {t.landing.feature_cards_desc}
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* Quiz Card */}
-                <Card className="group bg-background border-4 border-black dark:border-white shadow-[15px_15px_0px_0px_var(--primary)] transition-all duration-500 hover:rotate-2 hover:shadow-[25px_25px_0px_0px_var(--primary)]">
-                    <CardHeader className="pt-12 px-10">
-                        <div className="h-20 w-20 bg-[var(--primary)] border-4 border-black dark:border-white rounded-2xl mb-8 flex items-center justify-center text-white shadow-[6px_6px_0px_0px_#000] group-hover:-scale-110 transition-transform">
-                            <BrainCircuit className="w-10 h-10" strokeWidth={4} />
-                        </div>
-                        <CardTitle className="text-4xl font-black uppercase tracking-tighter text-foreground italic leading-none">{t.landing.feature_quiz_title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-12 px-10">
-                        <p className="font-black text-xl text-zinc-700 dark:text-zinc-400 leading-tight">
-                            {t.landing.feature_quiz_desc}
-                        </p>
-                    </CardContent>
-                </Card>
+        {/* 5. FEATURES GRID */}
+        <section className="py-24 px-6 w-full border-t-[4px] border-foreground bg-muted/30">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                <FeatureCard 
+                  icon={<BookOpen className="w-8 h-8" strokeWidth={3} />} 
+                  color="bg-sky-400 dark:bg-sky-500" 
+                  title={t.landing.feature_outline_title}
+                  desc={t.landing.feature_outline_desc}
+                />
+                <FeatureCard 
+                  icon={<Zap className="w-8 h-8 fill-current" strokeWidth={3} />} 
+                  color="bg-emerald-400 dark:bg-emerald-500" 
+                  title={t.landing.feature_cards_title}
+                  desc={t.landing.feature_cards_desc}
+                />
+                <FeatureCard 
+                  icon={<BrainCircuit className="w-8 h-8" strokeWidth={3} />} 
+                  color="bg-rose-400 dark:bg-rose-500" 
+                  title={t.landing.feature_quiz_title}
+                  desc={t.landing.feature_quiz_desc}
+                />
             </div>
         </section>
-
       </main>
       
-      <footer className="border-t-4 border-black dark:border-white p-16 text-center font-black bg-background text-foreground text-xs tracking-[0.4em] uppercase relative z-10">
-        <div className="flex justify-center gap-12 mb-8 opacity-60">
-            <Link href="#" className="hover:text-[var(--primary)] transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-[var(--primary)] transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-[var(--primary)] transition-colors">Contact</Link>
+      {/* 6. FOOTER - TINH CHỈNH GỌN GÀNG */}
+      <footer className="border-t-[4px] border-foreground py-16 px-6 bg-background relative z-10">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+            <div className="space-y-4">
+                <Link href="/" className="text-3xl font-black italic tracking-tighter hover:text-primary transition-colors">
+                    SMARTNOTE<span className="text-indigo-600 dark:text-indigo-400">.AI</span>
+                </Link>
+                <p className="font-bold text-sm text-muted-foreground max-w-xs uppercase italic leading-relaxed">
+                    The next-gen neural platform for high-speed knowledge acquisition.
+                </p>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase opacity-50 pt-4">
+                   Made with <Heart className="w-3 h-3 text-rose-500 fill-current animate-pulse" /> in Vietnam
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:flex sm:gap-20 gap-10">
+                <div className="space-y-4">
+                    <h4 className="font-black text-xs uppercase tracking-[0.2em] text-muted-foreground/60">Support</h4>
+                    <ul className="space-y-2 font-black text-xs uppercase italic">
+                        <li><a href="mailto:admin@fptoj.com" className="hover:text-primary transition-colors">Contact Us</a></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">Terms</Link></li>
+                    </ul>
+                </div>
+                <div className="space-y-4">
+                    <h4 className="font-black text-xs uppercase tracking-[0.2em] text-muted-foreground/60">Community</h4>
+                    <ul className="space-y-2 font-black text-xs uppercase italic">
+                        <li><a href="#" className="hover:text-primary transition-colors">Twitter / X</a></li>
+                        <li><a href="#" className="hover:text-primary transition-colors">Discord</a></li>
+                        <li><a href="#" className="hover:text-primary transition-colors">Github</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        © {new Date().getFullYear()} SmartNote AI • {t.landing.footer_copy}
       </footer>
+
+      {/* Tailwind Custom Animation (Đảm bảo có trong global CSS) */}
+      <style jsx global>{`
+        @keyframes marquee-slow {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee-slow {
+          display: inline-block;
+          animation: marquee-slow 40s linear infinite;
+        }
+      `}</style>
     </div>
+  );
+}
+
+function FeatureCard({ icon, title, desc, color }: { icon: React.ReactNode, title: string, desc: string, color: string }) {
+  return (
+    <Card className="bg-background border-[3px] border-foreground shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all duration-200 group">
+        <CardHeader className="pt-8 px-6">
+            <div className={`h-14 w-14 ${color} border-[3px] border-foreground rounded-lg mb-4 flex items-center justify-center text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,0.1)] group-hover:rotate-6 transition-transform`}>
+                {icon}
+            </div>
+            <CardTitle className="text-2xl font-black uppercase tracking-tight text-foreground italic">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="pb-8 px-6">
+            <p className="font-bold text-muted-foreground leading-snug italic text-sm md:text-base">
+                {desc}
+            </p>
+        </CardContent>
+    </Card>
   );
 }

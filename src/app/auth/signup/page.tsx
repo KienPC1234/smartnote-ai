@@ -8,20 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/LanguageProvider";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    otp: ""
+  });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
 
-    if (password !== confirmPassword) {
+    if (!isOtpStep && formData.password !== formData.confirmPassword) {
         toast.error("Password mismatch");
         setIsLoading(false);
         return;
@@ -31,11 +36,34 @@ export default function SignUpPage() {
         const res = await fetch("/api/auth/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ 
+                email: formData.email, 
+                password: formData.password,
+                otp: isOtpStep ? formData.otp : undefined
+            })
         });
+        
         const data = await res.json();
+        
         if (res.ok) {
-            await signIn("credentials", { email, password, redirectTo: "/app" });
+            if (data.otpSent) {
+                setIsOtpStep(true);
+                toast.success("Verification code sent to your email!");
+            } else {
+                toast.success("Account created! Logging in...");
+                const result = await signIn("credentials", { 
+                    email: formData.email, 
+                    password: formData.password, 
+                    redirect: false 
+                });
+                if (result?.error) {
+                    toast.error("Login failed, please sign in manually.");
+                    router.push("/auth/signin");
+                } else {
+                    router.push("/app");
+                    router.refresh();
+                }
+            }
         } else {
             toast.error(data.error || "Signup failed");
         }
@@ -54,79 +82,119 @@ export default function SignUpPage() {
         
       <div className="mb-8 text-center relative z-10">
         <Link href="/" className="text-4xl font-black uppercase italic tracking-tighter text-foreground">
-            SmartNote<span className="text-[var(--primary)]">.AI</span>
+            SmartNote<span className="text-primary">.AI</span>
         </Link>
       </div>
 
-      <Card className="w-full max-w-md border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative overflow-visible bg-background z-10">
-        <div className="absolute -top-4 -left-4 bg-[var(--secondary)] border-2 border-black dark:border-white px-4 py-1 font-black transform -rotate-2 z-10 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            NEW ACCOUNT
+      <Card className="w-full max-w-md border-4 border-border shadow-[12px_12px_0px_0px_var(--shadow)] relative overflow-visible bg-background z-10">
+        <div className="absolute -top-6 -left-6 bg-secondary border-4 border-border px-6 py-2 font-black transform -rotate-2 z-10 text-white shadow-[4px_4px_0px_0px_var(--shadow)]">
+            {isOtpStep ? "VERIFICATION" : "NEW ACCOUNT"}
         </div>
         
         <CardHeader>
-            <CardTitle className="text-3xl font-black text-center uppercase mt-4 text-foreground">{t.auth.access_portal}</CardTitle>
+            <CardTitle className="text-4xl font-black text-center uppercase mt-6 text-foreground italic tracking-tighter">
+                {isOtpStep ? "Verify Email" : "Join Network"}
+            </CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-6">
-            <button
-                onClick={() => signIn("google", { redirectTo: "/app" })}
-                className="w-full flex items-center justify-center py-4 px-4 bg-background text-foreground border-2 border-black dark:border-white font-black text-lg gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
-            >
-                <span>🇬 {t.auth.google_login}</span>
-            </button>
+        <CardContent className="space-y-8 pt-4">
+            {!isOtpStep && (
+                <>
+                    <button
+                        disabled={isLoading}
+                        onClick={() => signIn("google", { redirectTo: "/app" })}
+                        className="w-full flex items-center justify-center py-5 px-4 bg-background text-foreground border-4 border-border font-black text-xl gap-4 shadow-[6px_6px_0px_0px_var(--shadow)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all disabled:opacity-50"
+                    >
+                        <span>🇬 Sign up with Google</span>
+                    </button>
 
-            <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t-2 border-black dark:border-white" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                    <span className="bg-background px-4 text-foreground font-black border-2 border-black dark:border-white transform rotate-2">{t.auth.or}</span>
-                </div>
-            </div>
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t-4 border-border/20" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="bg-background px-6 text-foreground font-black border-4 border-border transform rotate-2 italic uppercase">Secure Entry</span>
+                        </div>
+                    </div>
+                </>
+            )}
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className="space-y-2">
-                    <label className="block text-sm font-black uppercase text-foreground">{t.auth.email_label}</label>
-                    <Input
-                        name="email"
-                        type="email"
-                        required
-                        placeholder={t.auth.email_placeholder}
-                        className="h-12 border-2 border-black dark:border-white font-bold bg-background text-foreground"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <label className="block text-sm font-black uppercase text-foreground">{t.auth.pass_label}</label>
-                    <Input
-                        name="password"
-                        type="password"
-                        required
-                        placeholder={t.auth.pass_placeholder}
-                        className="h-12 border-2 border-black dark:border-white font-bold bg-background text-foreground"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <label className="block text-sm font-black uppercase text-foreground">{t.auth.pass_label}</label>
-                    <Input
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        placeholder={t.auth.pass_placeholder}
-                        className="h-12 border-2 border-black dark:border-white font-bold bg-background text-foreground"
-                    />
-                </div>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+                {!isOtpStep ? (
+                    <>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-black uppercase text-foreground tracking-widest">Email Address</label>
+                            <Input
+                                value={formData.email}
+                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                type="email"
+                                required
+                                placeholder="USER@EXAMPLE.COM"
+                                className="h-14 border-4 border-border font-bold text-lg bg-background text-foreground focus-visible:ring-primary"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-black uppercase text-foreground tracking-widest">Password</label>
+                            <Input
+                                value={formData.password}
+                                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                type="password"
+                                required
+                                placeholder="••••••••"
+                                className="h-14 border-4 border-border font-bold text-lg bg-background text-foreground focus-visible:ring-primary"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-black uppercase text-foreground tracking-widest">Confirm Password</label>
+                            <Input
+                                value={formData.confirmPassword}
+                                onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                                type="password"
+                                required
+                                placeholder="••••••••"
+                                className="h-14 border-4 border-border font-bold text-lg bg-background text-foreground focus-visible:ring-primary"
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="p-6 bg-blue/10 border-4 border-blue/30 text-blue font-bold italic text-center">
+                            We've sent a 6-digit code to <br/>
+                            <span className="text-foreground not-italic font-black">{formData.email}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-black uppercase text-foreground tracking-widest text-center">Enter Access Code</label>
+                            <Input
+                                value={formData.otp}
+                                onChange={(e) => setFormData({...formData, otp: e.target.value})}
+                                required
+                                maxLength={6}
+                                placeholder="000000"
+                                className="h-20 border-4 border-border font-black text-4xl text-center bg-background text-foreground tracking-[0.5em] focus-visible:ring-primary"
+                            />
+                        </div>
+                        <button 
+                            type="button" 
+                            onClick={() => setIsOtpStep(false)}
+                            className="w-full text-sm font-black uppercase text-foreground/50 hover:text-primary transition-colors"
+                        >
+                            ← Back to information
+                        </button>
+                    </div>
+                )}
+
                 <Button
                     type="submit"
                     variant="default"
                     disabled={isLoading}
-                    className="w-full py-6 text-xl font-black uppercase border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px]"
+                    className="w-full py-8 text-2xl font-black uppercase border-4 border-border shadow-[8px_8px_0px_0px_var(--shadow)] hover:translate-x-[-2px] hover:translate-y-[-2px] bg-primary text-white hover:bg-primary transition-all active:shadow-none"
                 >
-                    {t.auth.signup_btn}
+                    {isLoading ? "PROCESSSING..." : (isOtpStep ? "VERIFY & JOIN" : "REQUEST ACCESS")}
                 </Button>
             </form>
 
-            <p className="text-center font-bold text-sm text-foreground mt-4">
-                {t.auth.has_account} <Link href="/auth/signin" className="text-[var(--primary)] underline underline-offset-4">{t.auth.login_link}</Link>
+            <p className="text-center font-black text-sm text-foreground/60 mt-6 uppercase tracking-widest">
+                {t.auth.has_account} <Link href="/auth/signin" className="text-primary underline underline-offset-4 decoration-4">{t.auth.login_link}</Link>
             </p>
         </CardContent>
       </Card>
