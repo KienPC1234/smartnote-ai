@@ -16,6 +16,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "./ui/button";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface Question {
   id: string;
@@ -272,9 +277,11 @@ export default function QuizView({
                     </div>
                 ) : (
                     <>
-                        <h3 className="text-2xl md:text-3xl font-bold mb-10 leading-snug uppercase italic tracking-tighter text-foreground border-l-8 border-primary pl-6 py-2">
-                            {currentQ?.question}
-                        </h3>
+                        <div className="prose prose-lg dark:prose-invert max-w-none font-semibold mb-10 text-foreground border-l-8 border-primary pl-6 py-2 leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
+                                {currentQ?.question || ""}
+                            </ReactMarkdown>
+                        </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {currentQ?.choices?.map((choice, cIdx) => {
@@ -301,7 +308,11 @@ export default function QuizView({
                                     )}>
                                         {String.fromCharCode(65 + cIdx)}
                                     </span>
-                                    <span className="font-bold text-lg leading-tight uppercase tracking-tight italic">{choice}</span>
+                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed text-current">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
+                                            {choice}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                               </button>
                             );
@@ -315,14 +326,16 @@ export default function QuizView({
                                         ? <CheckCircle2 className="w-8 h-8 text-green" />
                                         : <XCircle className="w-8 h-8 text-orange" />
                                     }
-                                    <span className="font-bold uppercase italic text-2xl text-foreground tracking-tight">
+                                    <span className="font-bold uppercase text-2xl text-foreground tracking-tight">
                                         {selectedIdx === currentQ.answer_index ? t.note.quiz_content.sync_success : t.note.quiz_content.mismatch}
                                     </span>
                                 </div>
                                 <div className="p-6 bg-secondary-background border-2 border-border mb-6">
-                                    <p className="font-bold text-lg leading-relaxed italic border-l-4 border-primary pl-6 text-foreground/80">
-                                        {currentQ.explanation}
-                                    </p>
+                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed border-l-4 border-primary pl-6 text-foreground/80">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
+                                            {currentQ.explanation}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                                 <button 
                                     onClick={handleNext}

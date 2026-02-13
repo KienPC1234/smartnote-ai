@@ -47,8 +47,8 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
 
     const hasStartedAuto = useRef(false);
 
-    const remarkPlugins = useMemo(() => [remarkGfm, remarkMath], []);
-    const rehypePlugins = useMemo(() => [rehypeKatex], []);
+    const remarkPlugins = useMemo(() => [remarkGfm, remarkMath] as any, []);
+    const rehypePlugins = useMemo(() => [[rehypeKatex, { output: 'html', strict: false }]] as any, []);
 
     const displayOutline = useMemo(() => {
         // 1. If currently generating outline, show ONLY what's streaming (forces reset look)
@@ -434,6 +434,20 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
                                             }
                                             .outline-render p, .outline-render li {
                                                 margin-bottom: 0.75rem !important;
+                                            }
+                                            /* Fix double backticks in inline code */
+                                            .outline-render code::before,
+                                            .outline-render code::after {
+                                                content: none !important;
+                                            }
+                                            .outline-render code {
+                                                background-color: rgba(0,0,0,0.05);
+                                                padding: 0.2rem 0.4rem;
+                                                border-radius: 0.25rem;
+                                                font-weight: 600;
+                                            }
+                                            .dark .outline-render code {
+                                                background-color: rgba(255,255,255,0.1);
                                             }
                                         `}</style>
                                         <div className="prose prose-zinc prose-lg dark:prose-invert max-w-full font-medium leading-relaxed [word-break:break-word] [overflow-wrap:anywhere] outline-render text-current">

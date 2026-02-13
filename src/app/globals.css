@@ -120,11 +120,25 @@ body {
     color: var(--foreground);
     max-width: 100%;
 }
-.prose h1, .prose h2, .prose h3, .prose h4, .prose strong {
+.prose h1, .prose h2, .prose h3, .prose h4 {
     @apply font-black uppercase italic tracking-tighter text-foreground leading-[1.2];
+}
+.prose strong {
+    @apply font-bold text-foreground;
 }
 .prose p {
     @apply font-medium leading-relaxed opacity-90;
+}
+/* Fix double backticks and style inline code */
+.prose code::before,
+.prose code::after {
+    content: none !important;
+}
+.prose code {
+    @apply font-semibold bg-foreground/5 px-1.5 py-0.5 rounded-sm;
+}
+.dark .prose code {
+    @apply bg-foreground/10;
 }
 
 /* Scrollbar styling */

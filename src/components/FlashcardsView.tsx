@@ -1,124 +1,163 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Rotate3d, Brain } from "lucide-react";
-import { Button } from "./ui/button";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, RefreshCcw, Brain } from "lucide-react";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { useTranslation } from "./LanguageProvider";
+import { Button } from "@/components/ui/button";
 
 interface Flashcard {
   id: string;
   front: string;
   back: string;
-  tags: string[];
-  difficulty: number;
 }
 
-export default function FlashcardsView({ data, isGenerating }: { data: { flashcards: Flashcard[] }, isGenerating?: boolean }) {
+interface FlashcardsViewProps {
+  data: {
+    flashcards: Flashcard[];
+  };
+  isGenerating?: boolean;
+}
+
+export default function FlashcardsView({ data, isGenerating }: FlashcardsViewProps) {
   const { t } = useTranslation();
-  const [index, setIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  
-  // Ensure cards is always an array
-  const cards = Array.isArray(data?.flashcards) ? data.flashcards : [];
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
 
-  // Reset index if it goes out of bounds (e.g. after re-generation)
-  useEffect(() => {
-    if (index >= cards.length && cards.length > 0) {
-        setIndex(0);
-    }
-  }, [cards.length, index]);
+  const cards = Array.isArray(data.flashcards) ? data.flashcards : [];
 
-  if (cards.length === 0 && !isGenerating) return null;
-
-  const current = cards[index];
-
-  function next() {
-    setFlipped(false);
+  const handleNext = () => {
+    setIsFlipped(false);
     setTimeout(() => {
-        setIndex((i) => (i + 1) % cards.length);
-    }, 150);
+      setCurrentIdx((prev) => (prev + 1) % cards.length);
+    }, 300); // Tăng timeout chút để khớp animation
+  };
+
+  const handlePrev = () => {
+    setIsFlipped(false);
+    setTimeout(() => {
+      setCurrentIdx((prev) => (prev - 1 + cards.length) % cards.length);
+    }, 300);
+  };
+
+  const reset = () => {
+    setCurrentIdx(0);
+    setIsFlipped(false);
+  };
+
+  if (cards.length === 0 && !isGenerating) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 opacity-50 border-4 border-dashed border-border rounded-none">
+        <Brain className="w-12 h-12 mb-4" />
+        <p className="font-bold uppercase tracking-widest text-sm italic">Neural Buffer Empty</p>
+      </div>
+    );
   }
 
-  function prev() {
-    setFlipped(false);
-    setTimeout(() => {
-        setIndex((i) => (i - 1 + cards.length) % cards.length);
-    }, 150);   
-  }
-
-  const isGeneratingPlaceholder = isGenerating && cards.length === 0;
+  const currentCard = cards[currentIdx];
 
   return (
-    <div className="flex flex-col items-center space-y-12 py-10 w-full max-w-3xl mx-auto">
-      {/* 3D Card Container */}
-      <div 
-        className="w-full h-96 [perspective:1000px] cursor-pointer" 
-        onClick={() => !isGeneratingPlaceholder && setFlipped(!flipped)}
-      >
-        <div className={`relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] ${flipped ? "[transform:rotateY(180deg)]" : ""}`}>
-          
-          {/* FRONT SIDE */}
-          <div className="absolute inset-0 [backface-visibility:hidden] bg-[var(--secondary)] border-8 border-black dark:border-white p-12 flex flex-col justify-center items-center text-center shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] dark:shadow-[15px_15px_0px_0px_rgba(255,255,255,0.3)]">
-            <div className="absolute top-6 left-6 flex items-center gap-3">
-                <div className="bg-black text-white p-2 border-2 border-white">
-                    <Brain className="w-5 h-5" />
-                </div>
-                <span className="font-black text-xs uppercase tracking-[0.2em] text-black italic bg-white/30 px-2 py-0.5">{t.note.flashcards_content.front_label} {index + 1}/{isGenerating && cards.length === 0 ? "?" : cards.length}</span>
+    <div className="max-w-3xl mx-auto space-y-8">
+      {/* Container 3D Perspective */}
+      <div className="group h-[400px] w-full [perspective:1000px]">
+        {/* Card Inner - Xử lý xoay */}
+        <div
+          onClick={() => setIsFlipped(!isFlipped)}
+          className={cn(
+            "relative w-full h-full transition-all duration-500 cursor-pointer",
+            "[transform-style:preserve-3d]", // Quan trọng: Giữ không gian 3D
+            isFlipped ? "[transform:rotateY(180deg)]" : "" // Xoay container
+          )}
+        >
+          {/* ================= MẶT TRƯỚC (FRONT) ================= */}
+          <div className="absolute inset-0 [backface-visibility:hidden] bg-background border-4 border-border p-10 flex flex-col items-center justify-center text-center shadow-[10px_10px_0px_0px_var(--shadow)]">
+            <span className="absolute top-6 left-8 text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">
+              {t.note.flashcards_content.front_label} #{currentIdx + 1}
+            </span>
+            <div className="prose prose-lg dark:prose-invert font-semibold text-foreground leading-relaxed max-w-full overflow-hidden">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm, remarkMath]} 
+                rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}
+              >
+                {currentCard?.front || "..."}
+              </ReactMarkdown>
             </div>
-            
-            {isGeneratingPlaceholder ? (
-                <div className="flex flex-col items-center gap-6">
-                    <div className="w-16 h-16 border-8 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
-                    <h3 className="text-2xl font-black uppercase italic animate-pulse text-black">{t.note.flashcards_content.synthesizing}...</h3>
-                </div>
-            ) : (
-                <h3 className="text-3xl md:text-5xl font-black leading-tight text-black uppercase italic tracking-tighter">
-                    {current?.front}
-                </h3>
-            )}
-            
-            {!isGeneratingPlaceholder && (
-                <div className="absolute bottom-8 flex items-center gap-3 text-xs font-black uppercase text-black/60 bg-black/5 px-4 py-2 border-2 border-black/10 rounded-full animate-bounce">
-                    <Rotate3d className="w-5 h-5" /> {t.note.flashcards_content.revealer}
-                </div>
-            )}
+            <div className="absolute bottom-8 text-[10px] font-bold uppercase tracking-widest opacity-30 animate-pulse">
+              {t.note.flashcards_content.revealer || "Click to flip"}
+            </div>
           </div>
 
-          {/* BACK SIDE */}
-          {!isGeneratingPlaceholder && current && (
-            <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-[var(--accent)] border-8 border-black dark:border-white p-12 flex flex-col justify-center items-center text-center shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] text-black">
-               <div className="absolute top-6 left-6 font-black text-xs uppercase tracking-[0.4em] italic text-black bg-black/10 px-2 py-0.5">{t.note.flashcards_content.back_label}</div>
-               <p className="text-2xl md:text-4xl font-black leading-relaxed text-black italic tracking-tight">
-                  {current?.back}
-               </p>
+          {/* ================= MẶT SAU (BACK) ================= */}
+          {/* LƯU Ý QUAN TRỌNG:
+              1. [transform:rotateY(180deg)]: Mặt sau phải xoay sẵn 180 độ.
+              2. [backface-visibility:hidden]: Để không bị nhìn xuyên thấu khi ở mặt trước.
+          */}
+          <div 
+            className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-orange text-white border-4 border-border p-10 flex flex-col items-center justify-center text-center shadow-[10px_10px_0px_0px_var(--shadow)] overflow-y-auto"
+          >
+            <span className="absolute top-6 left-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">
+              {t.note.flashcards_content.back_label}
+            </span>
+            <div className="prose prose-lg prose-invert font-semibold leading-relaxed text-white max-w-full overflow-hidden">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm, remarkMath]} 
+                rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}
+              >
+                {currentCard?.back || "..."}
+              </ReactMarkdown>
             </div>
-          )}
-
+          </div>
         </div>
       </div>
 
-      {/* Navigation Controls */}
-      <div className="flex items-center gap-12">
-        <Button 
-            disabled={cards.length <= 1}
-            onClick={(e) => { e.stopPropagation(); prev(); }} 
-            className="h-20 w-20 rounded-none border-4 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] bg-background text-foreground transition-all"
+      {/* Controls */}
+      <div className="flex items-center justify-between gap-6 px-4">
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handlePrev}
+          disabled={cards.length <= 1}
+          className="h-14 w-14 border-4 border-border shadow-[4px_4px_0px_0px_var(--shadow)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all bg-background text-foreground"
         >
-          <ChevronLeft className="w-10 h-10 text-foreground" strokeWidth={4} />
+          <ChevronLeft className="w-8 h-8" />
         </Button>
 
-        <div className="flex gap-4">
-            {[...Array(Math.min(cards.length, 5))].map((_, i) => (
-                <div key={i} className={`h-4 w-4 border-4 border-black dark:border-white transition-all ${i === index % 5 ? 'bg-[var(--primary)] w-12' : 'bg-transparent'}`} />
-            ))}
+        <div className="flex-1 text-center">
+          <p className="font-black text-xl italic uppercase tracking-tighter text-foreground">
+            {currentIdx + 1} / {cards.length}
+          </p>
+          <div className="w-32 h-1.5 bg-border/10 mx-auto mt-2 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${((currentIdx + 1) / cards.length) * 100}%` }}
+            />
+          </div>
         </div>
 
-        <Button 
-            disabled={cards.length <= 1 || (isGenerating && index === cards.length)}
-            onClick={(e) => { e.stopPropagation(); next(); }} 
-            className="h-20 w-20 rounded-none border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] bg-[var(--primary)] text-white disabled:opacity-50 transition-all"
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handleNext}
+          disabled={cards.length <= 1}
+          className="h-14 w-14 border-4 border-border shadow-[4px_4px_0px_0px_var(--shadow)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all bg-background text-foreground"
         >
-          <ChevronRight className="w-10 h-10 text-white" strokeWidth={4} />
+          <ChevronRight className="w-8 h-8" />
+        </Button>
+      </div>
+
+      <div className="flex justify-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={reset}
+          className="font-black uppercase italic border-2 border-border/20 text-foreground/40 hover:text-primary transition-colors text-[10px] tracking-widest bg-transparent"
+        >
+          <RefreshCcw className="w-3 h-3 mr-2" /> Recalibrate Sequence
         </Button>
       </div>
     </div>
