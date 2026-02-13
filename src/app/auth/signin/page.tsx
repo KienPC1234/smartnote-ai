@@ -11,15 +11,18 @@ export default function SignInPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 relative">
+      <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
+           style={{ backgroundImage: 'linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+      </div>
         
-      <div className="mb-8 text-center">
+      <div className="mb-8 text-center relative z-10">
         <Link href="/" className="text-4xl font-black uppercase italic tracking-tighter text-foreground">
             SmartNote<span className="text-[var(--primary)]">.AI</span>
         </Link>
       </div>
 
-      <Card className="w-full max-w-md border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative overflow-visible bg-background">
+      <Card className="w-full max-w-md border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative overflow-visible bg-background z-10">
         <div className="absolute -top-4 -left-4 bg-[var(--accent)] border-2 border-black dark:border-white px-4 py-1 font-black transform -rotate-2 z-10 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             {t.auth.login_required}
         </div>

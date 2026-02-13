@@ -230,7 +230,8 @@ export const dictionaries = {
       logout_confirm_title: "Xác nhận đăng xuất",
       logout_confirm_desc: "Bạn có chắc chắn muốn kết thúc phiên làm việc neural này không?",
       member: "Thành viên",
-      landing: "Trang chủ"
+      landing: "Trang chủ",
+      management:"Quản lý Note" 
     },
     landing: {
       marquee: "Hỗ trợ AI • Thẻ ghi nhớ thông minh • Đề cương tức thì • Trắc nghiệm thích ứng • Học tập thông minh • Hỗ trợ AI • Thẻ ghi nhớ thông minh • Đề cương tức thì • Trắc nghiệm thích ứng • Học tập thông minh • ",
@@ -402,7 +403,7 @@ export const dictionaries = {
       pass_label: "Mật khẩu",
       name_label: "Tên hiển thị",
       login_btn: "Vào hệ thống",
-      signup_btn: "Tham gia mạng Neural",
+      signup_btn: "Tham gia!",
       no_account: "Chưa có tài khoản?",
       has_account: "Đã có tài khoản?",
       signup_link: "Đăng ký",
