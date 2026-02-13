@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/SessionProvider";
 import { FloatingChat } from "@/components/FloatingChat";
 import { GlobalAlert } from "@/components/GlobalAlert";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,20 +32,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased text-foreground bg-background grid-background`}
+        suppressHydrationWarning
       >
         <SessionProvider>
             <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
             >
             <LanguageProvider>
+              <TooltipProvider>
                 {children}
                 <FloatingChat />
                 <GlobalAlert />
                 <Toaster />
+              </TooltipProvider>
             </LanguageProvider>
             </ThemeProvider>
         </SessionProvider>

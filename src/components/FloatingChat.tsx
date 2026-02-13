@@ -12,6 +12,8 @@ import 'katex/dist/katex.min.css';
 import Link from "next/link";
 import { useAlert } from "@/components/GlobalAlert";
 import { processFile } from "@/lib/file-processor";
+import { useTranslation } from "./LanguageProvider";
+import { toast } from "sonner";
 
 interface Message {
   role: string;
@@ -26,8 +28,25 @@ export function FloatingChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
-  const { showAlert } = useAlert();
+  const [uploadedImages, setUploadedImages] = useState<{ id: string, preview: string, extractedText: string }[]>([]);
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Use a localized config with fallbacks to avoid crashes
+  const chatConfig = t?.global_chat || {
+    title: "NEURAL BRAIN",
+    welcome: "Neural network online. Ask me about your nodes.",
+    placeholder: "TYPE COMMAND OR QUERY...",
+    ocr_placeholder: "OCR IN PROGRESS...",
+    thinking: "Thinking",
+    log_title: "Log Analysis Process",
+    student_label: "Student",
+    assistant_label: "Assistant",
+    ocr_success: "OCR Success",
+    ocr_error: "OCR Error",
+    ocr_desc: "Extracted content from {count} images.",
+    ocr_fail_desc: "Optical sensor failure."
+  };
 
   useEffect(() => {
     const scrollContainer = document.querySelector('[data-radix-scroll-area-viewport]');
@@ -37,29 +56,67 @@ export function FloatingChat() {
   }, [messages, isLoading]);
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     
     setIsProcessingImage(true);
     try {
-        const text = await processFile(file);
-        setInput(prev => prev + `\n[IMAGE_ANALYSIS: ${text}]\n`);
-        showAlert("Success", "Intelligence extracted from image.", "success");
-    } catch (e) {
-        showAlert("Error", "Optical sensor failure.", "error");
+        const newImages = await Promise.all(Array.from(files).map(async (file) => {
+            const preview = URL.createObjectURL(file);
+            
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/api/ai/process-file", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to process image.");
+            }
+
+            const { text } = await res.json();
+            return {
+                id: Math.random().toString(36).substring(7),
+                preview,
+                extractedText: text
+            };
+        }));
+        setUploadedImages(prev => [...prev, ...newImages]);
+        toast.success(chatConfig.ocr_success, { description: chatConfig.ocr_desc.replace("{count}", files.length.toString()) });
+    } catch (e: any) {
+        toast.error(chatConfig.ocr_error, { description: e.message || chatConfig.ocr_fail_desc });
     } finally {
         setIsProcessingImage(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
+  const removeImage = (id: string) => {
+      setUploadedImages(prev => {
+          const target = prev.find(img => img.id === id);
+          if (target) URL.revokeObjectURL(target.preview);
+          return prev.filter(img => img.id !== id);
+      });
+  };
+
   async function handleSend() {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && uploadedImages.length === 0) || isLoading) return;
     
-    const userMsg = input.trim();
+    let fullContent = input.trim();
+    if (uploadedImages.length > 0) {
+        const ocrContext = uploadedImages.map((img, i) => `[IMAGE_${i+1}_OCR_TEXT]:\n${img.extractedText}`).join("\n\n");
+        fullContent = `${fullContent}\n\n[CONTEXT_FROM_UPLOADED_IMAGES]:\n${ocrContext}`;
+    }
+
     setInput("");
+    // Clean up previews
+    uploadedImages.forEach(img => URL.revokeObjectURL(img.preview));
+    setUploadedImages([]);
     
-    const updatedMessages = [...messages, { role: "user", content: userMsg }];
+    const updatedMessages = [...messages, { role: "user", content: fullContent }];
     setMessages(updatedMessages);
     setIsLoading(true);
 
@@ -102,7 +159,6 @@ export function FloatingChat() {
                             const updated = [...prev];
                             const last = updated[updated.length - 1];
                             if (last.role === "assistant") {
-                                // Gán lại để đảm bảo React thấy sự thay đổi
                                 updated[updated.length - 1] = {
                                     ...last,
                                     content: assistantContent,
@@ -116,7 +172,7 @@ export function FloatingChat() {
             }
         }
     } catch (e: any) {
-        showAlert("Neural Error", e.message, "error");
+        toast.error("Neural Error", { description: e.message });
     } finally {
         setIsLoading(false);
     }
@@ -134,8 +190,8 @@ export function FloatingChat() {
     return (
       <div className="fixed bottom-8 right-8 flex flex-col items-end gap-4 z-50">
         <Link href="/app/guide">
-            <button className="w-12 h-12 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_#000] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
-                <HelpCircle className="w-6 h-6 text-black dark:text-white" />
+            <button className="w-12 h-12 bg-background border-2 border-black dark:border-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+                <HelpCircle className="w-6 h-6 text-foreground" />
             </button>
         </Link>
         <button onClick={() => setIsOpen(true)} className="w-16 h-16 bg-[var(--primary)] border-4 border-black dark:border-white rounded-full flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all group">
@@ -147,10 +203,10 @@ export function FloatingChat() {
 
   return (
     <div className="fixed bottom-8 right-8 w-[500px] max-w-[95vw] h-[700px] max-h-[85vh] flex flex-col z-50 animate-in slide-in-from-bottom-4">
-      <Card className="flex-1 border-4 border-black dark:border-white flex flex-col bg-white dark:bg-zinc-950 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+      <Card className="flex-1 border-4 border-black dark:border-white flex flex-col bg-background shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] overflow-hidden">
         <CardHeader className="bg-[var(--secondary)] border-b-4 border-black dark:border-white flex flex-row items-center justify-between p-4 space-y-0">
           <CardTitle className="text-xl font-black italic flex items-center gap-2 text-black">
-            <Bot className="w-6 h-6" /> NEURAL BRAIN
+            <Bot className="w-6 h-6" /> {chatConfig.title}
           </CardTitle>
           <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform p-1">
             <X className="w-6 h-6 text-black" />
@@ -160,30 +216,29 @@ export function FloatingChat() {
         <ScrollArea className="flex-1 bg-zinc-50 dark:bg-zinc-900/50">
           <CardContent className="p-4 space-y-6">
             {messages.length === 0 && (
-              <div className="text-center py-10 opacity-40 font-bold italic text-sm">
-                  Neural network online. Ask me about your nodes.
+              <div className="text-center py-10 opacity-40 font-bold italic text-sm text-foreground">
+                  {chatConfig.welcome}
               </div>
             )}
             {messages.map((m, i) => (
               <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`p-4 border-2 border-black dark:border-white max-w-[95%] shadow-[4px_4px_0px_0px_#000] dark:shadow-[4px_4px_0px_0px_#fff]
-                  ${m.role === 'user' ? 'bg-[var(--accent)] text-black' : 'bg-white dark:bg-zinc-800 text-foreground'}
+                <div className={`p-4 border-2 border-black dark:border-white max-w-[95%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]
+                  ${m.role === 'user' ? 'bg-[var(--accent)] text-black' : 'bg-background text-foreground'}
                 `}>
-                  <div className="flex items-center gap-2 mb-2 opacity-50 uppercase text-[10px] font-black tracking-widest">
+                  <div className={`flex items-center gap-2 mb-2 opacity-50 uppercase text-[10px] font-black tracking-widest ${m.role === 'user' ? 'text-black' : 'text-foreground'}`}>
                       {m.role === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
-                      {m.role === 'user' ? 'Student' : 'Assistant'}
+                      {m.role === 'user' ? chatConfig.student_label : chatConfig.assistant_label}
                   </div>
 
-                  {/* Improved Thinking Section */}
                   {m.reasoning && (
-                    <div className="mb-4 bg-zinc-100 dark:bg-zinc-900/50 border-2 border-black/10 dark:border-white/10 p-3 rounded-lg">
+                    <div className="mb-4 bg-zinc-100 dark:bg-zinc-900/50 border-2 border-black/10 dark:border-white/10 p-3 rounded-lg text-foreground">
                         <button 
                             onClick={() => toggleThinking(i)}
                             className="flex items-center justify-between w-full text-[10px] font-black uppercase text-zinc-500 hover:text-[var(--primary)] transition-colors"
                         >
                             <span className="flex items-center gap-2">
                                 <Loader2 className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-                                Log Analysis Process
+                                {chatConfig.log_title}
                             </span>
                             {m.isThinkingOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
@@ -195,7 +250,7 @@ export function FloatingChat() {
                     </div>
                   )}
 
-                  <div className="prose prose-sm dark:prose-invert max-w-none font-medium leading-relaxed overflow-x-auto">
+                  <div className="prose prose-sm dark:prose-invert max-w-none font-medium leading-relaxed overflow-x-auto text-current">
                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                           {m.content}
                       </ReactMarkdown>
@@ -205,9 +260,9 @@ export function FloatingChat() {
             ))}
             {isLoading && messages[messages.length-1]?.role === "user" && (
               <div className="flex justify-start animate-in fade-in">
-                  <div className="p-4 border-2 border-black dark:border-white bg-white dark:bg-zinc-800 shadow-[4px_4px_0px_0px_#000]">
-                      <div className="flex gap-1 text-black dark:text-white font-black text-xs uppercase tracking-widest">
-                        <span>Thinking</span>
+                  <div className="p-4 border-2 border-black dark:border-white bg-background text-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                      <div className="flex gap-1 font-black text-xs uppercase tracking-widest">
+                        <span>{chatConfig.thinking}</span>
                         <span className="animate-bounce">.</span>
                         <span className="animate-bounce [animation-delay:0.2s]">.</span>
                         <span className="animate-bounce [animation-delay:0.4s]">.</span>
@@ -218,31 +273,49 @@ export function FloatingChat() {
           </CardContent>
         </ScrollArea>
 
-        <div className="p-4 border-t-4 border-black dark:border-white flex flex-col gap-2 bg-white dark:bg-zinc-950">
+        <div className="p-4 border-t-4 border-black dark:border-white flex flex-col gap-2 bg-background">
+          {/* Image Preview Bar */}
+          {uploadedImages.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-black dark:scrollbar-thumb-white">
+                  {uploadedImages.map((img) => (
+                      <div key={img.id} className="relative shrink-0">
+                          <img src={img.preview} alt="OCR Preview" className="w-12 h-12 object-cover border-2 border-black rounded shadow-[2px_2px_0px_0px_#000]" />
+                          <button 
+                            onClick={() => removeImage(img.id)}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 border border-black shadow-[1px_1px_0px_0px_#000]"
+                          >
+                              <X className="w-2 h-2" />
+                          </button>
+                      </div>
+                  ))}
+              </div>
+          )}
+
           <div className="flex gap-2">
             <input 
                 type="file" hidden ref={fileInputRef} 
                 onChange={handleImageUpload} accept="image/*"
+                multiple
             />
             <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading || isProcessingImage}
-                className="w-12 h-12 border-2 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center hover:bg-[var(--accent)] transition-colors shadow-[3px_3px_0px_0px_#000]"
+                className="w-12 h-12 border-2 border-black dark:border-white bg-background text-foreground flex items-center justify-center hover:bg-[var(--accent)] transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]"
             >
-                {isProcessingImage ? <Loader2 className="w-5 h-5 animate-spin text-black dark:text-white" /> : <ImageIcon className="w-5 h-5 text-black dark:text-white" />}
+                {isProcessingImage ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
             </button>
             <input 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={isProcessingImage ? "EXTRACTING DATA..." : "TYPE COMMAND OR QUERY..."}
+                placeholder={isProcessingImage ? chatConfig.ocr_placeholder : chatConfig.placeholder}
                 disabled={isProcessingImage}
-                className="flex-1 h-12 px-4 border-2 border-black dark:border-white bg-zinc-100 dark:bg-zinc-800 font-black text-xs outline-none focus:bg-white dark:focus:bg-zinc-700 transition-colors text-black dark:text-white"
+                className="flex-1 h-12 px-4 border-2 border-black dark:border-white bg-background text-foreground font-black text-xs outline-none focus:bg-zinc-50 dark:focus:bg-zinc-800 transition-colors"
             />
             <button 
                 onClick={handleSend} 
                 disabled={isLoading || isProcessingImage} 
-                className="w-12 h-12 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white flex items-center justify-center hover:bg-[var(--primary)] transition-colors shadow-[3px_3px_0px_0px_#000] dark:shadow-[3px_3px_0px_0px_#fff]"
+                className="w-12 h-12 bg-foreground text-background border-2 border-black dark:border-white flex items-center justify-center hover:bg-[var(--primary)] transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]"
             >
                 <Send className="w-5 h-5" />
             </button>

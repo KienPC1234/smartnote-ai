@@ -13,12 +13,16 @@ export async function POST(req: Request) {
         }
 
         const { title, sourceText } = await req.json();
+        
+        console.log(`[DEBUG][API_NOTES] Creating note: "${title?.substring(0, 20)}..." by user: ${session.user.id}`);
 
         if (!title || typeof title !== "string" || title.length > 120 || title.length < 1) {
+            console.warn(`[DEBUG][API_NOTES] Validation failed: invalid title`);
             return NextResponse.json({ error: "Invalid title (1-120 chars)" }, { status: 400 });
         }
 
         if (!sourceText || typeof sourceText !== "string") {
+            console.warn(`[DEBUG][API_NOTES] Validation failed: invalid source text`);
             return NextResponse.json({ error: "Invalid source text" }, { status: 400 });
         }
 
@@ -33,9 +37,10 @@ export async function POST(req: Request) {
             },
         });
 
+        console.log(`[DEBUG][API_NOTES] Success. Note ID: ${note.id}`);
         return NextResponse.json({ id: note.id }, { status: 201 });
     } catch (error) {
-        console.error("Create Note Error:", error);
+        console.error(`[DEBUG][API_NOTES] FATAL ERROR:`, error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

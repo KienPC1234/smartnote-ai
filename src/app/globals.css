@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #fdfbf7;
@@ -21,7 +22,7 @@
   --reverseBoxShadowX: -3px;
   --reverseBoxShadowY: -3px;
 
-  /* Màu ô ly vở - Light */
+  /* Màu ô ly vở - Light (Increased for visibility) */
   --grid-color: rgba(0, 0, 0, 0.15);
 }
 
@@ -40,8 +41,8 @@
   --accent: #f59e0b;
   --purple: #8b5cf6;
 
-  /* Màu ô ly vở - Dark */
-  --grid-color: rgba(255, 255, 255, 0.1);
+  /* Màu ô ly vở - Dark (Increased for visibility) */
+  --grid-color: rgba(255, 255, 255, 0.12);
 }
 
 @theme inline {
@@ -67,13 +68,21 @@
 body {
   background-color: var(--background);
   background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 20px 20px;
+    linear-gradient(var(--grid-color) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--grid-color) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
   background-position: center top;
   color: var(--foreground);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 100vh;
+}
+
+.grid-background {
+  background-image:
+    linear-gradient(var(--grid-color) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--grid-color) 1.5px, transparent 1.5px) !important;
+  background-size: 30px 30px !important;
 }
 
 .bg-main {
@@ -95,4 +104,12 @@ body {
   display: inline-block;
   white-space: nowrap;
   animation: marquee 25s linear infinite;
+}
+
+/* Fix for possible overlapping in light theme */
+.prose {
+    color: var(--foreground);
+}
+.prose h1, .prose h2, .prose h3, .prose h4, .prose strong {
+    color: var(--foreground);
 }

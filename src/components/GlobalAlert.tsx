@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { create } from "zustand";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { useTranslation } from "./LanguageProvider";
 
 interface AlertStore {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const useAlert = create<AlertStore>((set) => ({
 
 export function GlobalAlert() {
   const { isOpen, title, description, variant, closeAlert } = useAlert();
+  const { t } = useTranslation();
 
   const icons = {
     info: <Info className="w-8 h-8 text-[var(--secondary)]" />,
@@ -41,19 +43,19 @@ export function GlobalAlert() {
 
   return (
     <Dialog open={isOpen} onOpenChange={closeAlert}>
-      <DialogContent className="border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_#000] dark:shadow-[12px_12px_0px_0px_#fff]">
+      <DialogContent className="border-4 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] bg-background">
         <DialogHeader className="flex flex-col items-center text-center space-y-4">
-          <div className="p-3 border-2 border-black rounded-full bg-white shadow-[4px_4px_0px_0px_#000]">
+          <div className="p-3 border-2 border-black dark:border-white rounded-full bg-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             {icons[variant]}
           </div>
-          <DialogTitle className="text-2xl font-black uppercase italic tracking-tighter">{title}</DialogTitle>
+          <DialogTitle className="text-2xl font-black uppercase italic tracking-tighter text-foreground">{title}</DialogTitle>
           <DialogDescription className="font-bold text-zinc-600 dark:text-zinc-400">
             {description}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-center">
-          <Button onClick={closeAlert} className="px-8 font-black border-2 border-black shadow-[4px_4px_0px_0px_#000]">
-            UNDERSTOOD
+          <Button onClick={closeAlert} className="px-8 font-black border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] bg-background text-foreground">
+            {t.common.understood}
           </Button>
         </DialogFooter>
       </DialogContent>
