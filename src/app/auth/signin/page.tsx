@@ -6,23 +6,63 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/components/LanguageProvider";
+import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
-export default function SignInPage() {
+function SignInForm() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      if (error === "CredentialsSignin") {
+        toast.error("Invalid email or password. Please try again.");
+      } else if (error === "OAuthAccountNotLinked") {
+        toast.error("Email already in use with another provider.");
+      } else {
+        toast.error("An error occurred during sign in.");
+      }
+      
+      // Clean up the URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("error");
+      router.replace(`/auth/signin${params.toString() ? `?${params.toString()}` : ""}`);
+    }
+  }, [searchParams, router]);
+
+  const handleCredentialsLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+        const result = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+        });
+
+        if (result?.error) {
+            toast.error("Login failed. Check your email and password.");
+        } else {
+            router.push("/app");
+            router.refresh();
+        }
+    } catch (error) {
+        toast.error("An unexpected error occurred.");
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 relative">
-      <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
-           style={{ backgroundImage: 'linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-      </div>
-        
-      <div className="mb-8 text-center relative z-10">
-        <Link href="/" className="text-4xl font-black uppercase italic tracking-tighter text-foreground">
-            SmartNote<span className="text-[var(--primary)]">.AI</span>
-        </Link>
-      </div>
-
-      <Card className="w-full max-w-md border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative overflow-visible bg-background z-10">
+    <Card className="w-full max-w-md border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative overflow-visible bg-background z-10">
         <div className="absolute -top-4 -left-4 bg-[var(--accent)] border-2 border-black dark:border-white px-4 py-1 font-black transform -rotate-2 z-10 text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             {t.auth.login_required}
         </div>
@@ -33,8 +73,9 @@ export default function SignInPage() {
         
         <CardContent className="space-y-6">
             <button
+                disabled={isLoading}
                 onClick={() => signIn("google", { redirectTo: "/app" })}
-                className="w-full flex items-center justify-center py-4 px-4 bg-background text-foreground border-2 border-black dark:border-white font-black text-lg gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+                className="w-full flex items-center justify-center py-4 px-4 bg-background text-foreground border-2 border-black dark:border-white font-black text-lg gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all disabled:opacity-50"
             >
                 <span>🇬 {t.auth.google_login}</span>
             </button>
@@ -50,15 +91,7 @@ export default function SignInPage() {
 
             <form
                 className="space-y-4"
-                onSubmit={async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    await signIn("credentials", {
-                        email: formData.get("email"),
-                        password: formData.get("password"),
-                        redirectTo: "/app"
-                    });
-                }}
+                onSubmit={handleCredentialsLogin}
             >
                 <div className="space-y-2">
                 <label className="block text-sm font-black uppercase text-foreground">{t.auth.email_label}</label>
@@ -83,9 +116,10 @@ export default function SignInPage() {
                 <Button
                     type="submit"
                     variant="default"
+                    disabled={isLoading}
                     className="w-full py-6 text-xl font-black uppercase border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px]"
                 >
-                    {t.auth.login_btn}
+                    {isLoading ? "Signing in..." : t.auth.login_btn}
                 </Button>
             </form>
 
@@ -93,7 +127,26 @@ export default function SignInPage() {
                 {t.auth.no_account} <Link href="/auth/signup" className="text-[var(--secondary)] underline underline-offset-4">{t.auth.signup_link}</Link>
             </p>
         </CardContent>
-      </Card>
+    </Card>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 relative">
+      <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
+           style={{ backgroundImage: 'linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+      </div>
+        
+      <div className="mb-8 text-center relative z-10">
+        <Link href="/" className="text-4xl font-black uppercase italic tracking-tighter text-foreground">
+            SmartNote<span className="text-[var(--primary)]">.AI</span>
+        </Link>
+      </div>
+
+      <Suspense fallback={<div className="font-black animate-pulse">Loading Access Portal...</div>}>
+        <SignInForm />
+      </Suspense>
     </div>
   );
 }
