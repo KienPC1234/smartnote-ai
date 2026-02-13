@@ -1,3 +1,6 @@
+export type Language = "en" | "vi";
+export type Dictionary = typeof dictionaries.en;
+
 export const dictionaries = {
   en: {
     nav: {

@@ -27,24 +27,22 @@ export default function GuidePage() {
         <h1 className="text-4xl font-black italic tracking-tighter uppercase text-foreground">{t.guide.title}</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-        {t.guide.steps.map((step, i) => {
+        {t.guide.steps.map((step: { title: string; desc: string }, i: number) => {
           const Icon = stepIcons[i];
           return (
-            <Card key={i} className="border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:rotate-1 transition-transform bg-background">
-              <CardHeader className="flex flex-row items-center gap-4">
-                <div className="p-3 border-2 border-black dark:border-white rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]" style={{ backgroundColor: stepColors[i] }}>
-                  <Icon className="w-6 h-6 text-black" />
+            <Card key={i} className="border-8 border-black dark:border-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] hover:rotate-1 transition-transform bg-background">
+              <CardHeader className="flex flex-row items-center gap-6 p-8">
+                <div className="p-4 border-4 border-black dark:border-white rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" style={{ backgroundColor: stepColors[i] }}>
+                  <Icon className="w-8 h-8 text-black" strokeWidth={3} />
                 </div>
-                <CardTitle className="text-2xl font-black uppercase text-foreground">{step.title}</CardTitle>
+                <CardTitle className="text-3xl font-black uppercase text-foreground italic tracking-tighter">{step.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="font-bold text-zinc-600 dark:text-zinc-400 leading-relaxed">{step.desc}</p>
+              <CardContent className="px-8 pb-10">
+                <p className="font-black text-lg text-zinc-600 dark:text-zinc-400 leading-snug italic underline decoration-2 decoration-black/5 dark:decoration-white/5">{step.desc}</p>
               </CardContent>
             </Card>
           );
         })}
-      </div>
 
       <Card className="border-4 border-black dark:border-white p-10 bg-foreground text-background dark:bg-foreground dark:text-background shadow-[12px_12px_0px_0px_var(--primary)] relative z-10">
         <div className="flex flex-col items-center text-center space-y-6">

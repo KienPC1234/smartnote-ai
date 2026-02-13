@@ -17,7 +17,7 @@ export function NoteCard({ note, folders }: NoteCardProps) {
   return (
     <Link 
       href={`/app/n/${note.id}`} 
-      className="block group relative"
+      className="block group relative h-full"
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("noteId", note.id);
@@ -25,18 +25,19 @@ export function NoteCard({ note, folders }: NoteCardProps) {
       }}
     >
       <Card 
-        className={`h-full border-2 border-black dark:border-white flex flex-col transition-all duration-300
-        group-hover:-translate-y-2 group-hover:rotate-1 group-hover:shadow-[12px_12px_0px_0px_var(--secondary)]
+        className={`h-full border-4 border-black dark:border-white flex flex-col transition-all duration-300
+        shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]
+        group-hover:translate-x-[-4px] group-hover:translate-y-[-4px] group-hover:shadow-[12px_12px_0px_0px_var(--secondary)]
         bg-background
         `}
       >
-        <CardHeader className="pb-3 border-b-2 border-black dark:border-white/20 bg-background relative pr-12">
+        <CardHeader className="pb-3 border-b-4 border-black dark:border-white/20 bg-background relative pr-12">
           <div className="flex justify-between items-start gap-4">
             <CardTitle className="text-xl font-black leading-tight line-clamp-2 uppercase group-hover:text-[var(--primary)] transition-colors text-foreground">
               {note.title}
             </CardTitle>
             {note.generations.length > 0 && (
-              <div className="bg-[var(--accent)] border-2 border-black dark:border-white p-1.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <div className="bg-[var(--accent)] border-2 border-black dark:border-white p-1.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover:-rotate-12 transition-transform">
                 <Sparkles className="w-4 h-4 text-black" strokeWidth={3} />
               </div>
             )}

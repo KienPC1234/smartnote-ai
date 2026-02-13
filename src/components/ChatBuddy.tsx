@@ -146,7 +146,7 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none leading-relaxed text-current">
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
-                {msg.role === "bot" && isLoading && i === messages.length - 1 && (
+                {msg.role === "assistant" && isLoading && i === messages.length - 1 && (
                     <span className="inline-block w-2 h-4 bg-foreground animate-pulse ml-1 align-middle" />
                 )}
               </div>

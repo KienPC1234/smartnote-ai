@@ -2,47 +2,50 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #fdfbf7;
-  --foreground: #09090b;
+  --background: #fffbef; /* Creamy paper-like background */
+  --foreground: #000000;
 
-  /* Theme Colors */
-  --main: #fb7185;
-  --main-foreground: #ffffff;
+  /* Neobrutalism Palette */
+  --main: #ff5e8c;
+  --main-foreground: #000000;
   --secondary-background: #ffffff;
-  --border: #09090b;
-  --shadow: #09090b;
+  --border: #000000;
+  --shadow: #000000;
 
-  --primary: #fb7185;
-  --secondary: #2dd4bf;
-  --accent: #fcd34d;
-  --purple: #a78bfa;
+  --primary: #ff3e7c;   /* More vibrant pink */
+  --secondary: #00f5d4; /* Neon Teal */
+  --accent: #fee440;    /* Bright Yellow */
+  --purple: #9b5de5;    /* Electric Purple */
+  --orange: #f15bb5;    /* Saturated Orange/Pink */
+  --blue: #00bbf9;      /* Sky Blue */
 
-  --boxShadowX: 3px;
-  --boxShadowY: 3px;
-  --reverseBoxShadowX: -3px;
-  --reverseBoxShadowY: -3px;
+  --boxShadowX: 6px;
+  --boxShadowY: 6px;
+  --reverseBoxShadowX: -6px;
+  --reverseBoxShadowY: -6px;
 
-  /* Màu ô ly vở - Light (Increased for visibility) */
-  --grid-color: rgba(0, 0, 0, 0.15);
+  /* Grid Color - Increased visibility */
+  --grid-color: rgba(0, 0, 0, 0.12);
 }
 
 .dark {
-  --background: #0c0a09;
-  --foreground: #f8fafc;
+  --background: #0a0a0a;
+  --foreground: #ffffff;
 
-  --main: #e11d48;
-  --main-foreground: #ffffff;
-  --secondary-background: #1c1917;
-  --border: #f8fafc;
+  --main: #ff5e8c;
+  --main-foreground: #000000;
+  --secondary-background: #151515;
+  --border: #ffffff;
   --shadow: #000000;
 
-  --primary: #f43f5e;
-  --secondary: #14b8a6;
-  --accent: #f59e0b;
-  --purple: #8b5cf6;
+  --primary: #ff5e8c;
+  --secondary: #00f5d4;
+  --accent: #fee440;
+  --purple: #9b5de5;
+  --orange: #f15bb5;
+  --blue: #00bbf9;
 
-  /* Màu ô ly vở - Dark (Increased for visibility) */
-  --grid-color: rgba(255, 255, 255, 0.12);
+  --grid-color: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -58,18 +61,21 @@
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-purple: var(--purple);
+  --color-orange: var(--orange);
+  --color-blue: var(--blue);
 
   --spacing-boxShadowX: var(--boxShadowX);
   --spacing-boxShadowY: var(--boxShadowY);
   --spacing-reverseBoxShadowX: var(--reverseBoxShadowX);
   --spacing-reverseBoxShadowY: var(--reverseBoxShadowY);
+  
+  --radius-base: 0px; /* Neobrutalism often uses sharp corners or minimal rounding */
 }
 
 body {
   background-color: var(--background);
   background-image:
-    linear-gradient(var(--grid-color) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, var(--grid-color) 1.5px, transparent 1.5px);
+    radial-gradient(var(--grid-color) 1px, transparent 0);
   background-size: 30px 30px;
   background-position: center top;
   color: var(--foreground);
@@ -80,36 +86,45 @@ body {
 
 .grid-background {
   background-image:
-    linear-gradient(var(--grid-color) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, var(--grid-color) 1.5px, transparent 1.5px) !important;
-  background-size: 30px 30px !important;
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px) !important;
+  background-size: 40px 40px !important;
 }
 
-.bg-main {
-  color: #fff !important;
+/* Common Neobrutalism Classes */
+.neo-brutal-card {
+  @apply bg-background border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.4)];
 }
+
+.neo-brutal-button {
+  @apply border-4 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.4)] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] transition-all;
+}
+
+/* Custom shadow for colorful pop */
+.shadow-primary { @apply shadow-[6px_6px_0px_0px_var(--primary)]; }
+.shadow-secondary { @apply shadow-[6px_6px_0px_0px_var(--secondary)]; }
+.shadow-accent { @apply shadow-[6px_6px_0px_0px_var(--accent)]; }
 
 /* Animations */
 @keyframes marquee {
-  0% {
-    transform: translateX(100%);
-  }
-
-  100% {
-    transform: translateX(-100%);
-  }
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
 .animate-marquee {
   display: inline-block;
   white-space: nowrap;
-  animation: marquee 25s linear infinite;
+  animation: marquee 30s linear infinite;
 }
 
-/* Fix for possible overlapping in light theme */
+/* Typography Enhancements */
 .prose {
     color: var(--foreground);
+    max-width: 100%;
 }
 .prose h1, .prose h2, .prose h3, .prose h4, .prose strong {
-    color: var(--foreground);
+    @apply font-black uppercase italic tracking-tighter text-foreground;
+}
+.prose p {
+    @apply font-medium leading-relaxed;
 }

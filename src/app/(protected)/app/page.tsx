@@ -65,24 +65,25 @@ export default async function DashboardPage(props: PageProps) {
     <div className="space-y-10 relative pb-20">
       <div className="relative z-10 space-y-8">
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b-2 border-black dark:border-white pb-8">
-            <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[var(--primary)] font-black uppercase tracking-widest text-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b-4 border-black dark:border-white pb-8 relative">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-[var(--accent)] rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+            <div className="space-y-2 relative z-10">
+                <div className="flex items-center gap-2 text-[var(--primary)] font-black uppercase tracking-widest text-sm bg-background border-2 border-black dark:border-white px-3 py-1 w-fit shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                     <LayoutDashboard className="w-4 h-4" />
                     {t.dashboard.student_dashboard}
                 </div>
-                <h1 className="text-5xl font-black uppercase text-foreground italic tracking-tighter leading-none">
-                    {t.dashboard.welcome}, <span className="text-[var(--primary)]">{session.user?.name || session.user?.email?.split('@')[0]}</span>
+                <h1 className="text-6xl md:text-7xl font-black uppercase text-foreground italic tracking-tighter leading-none">
+                    {t.dashboard.welcome}, <br className="md:hidden" /><span className="text-[var(--primary)] drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:drop-shadow-[4px_4px_0px_rgba(255,255,255,0.2)]">{session.user?.name || session.user?.email?.split('@')[0]}</span>
                 </h1>
-                <p className="text-zinc-500 dark:text-zinc-400 font-bold max-w-md">
+                <p className="text-zinc-600 dark:text-zinc-400 font-bold max-w-md text-lg italic underline decoration-[var(--secondary)] decoration-2">
                     {t.dashboard.notes_count.replace("{count}", notes.length.toString())}{" "}
                     {t.dashboard.ai_sets_count.replace("{count}", totalGenerations.toString())}
                 </p>
             </div>
             
-            <Link href="/app/new">
-                <Button size="lg" className="h-16 px-8 text-xl font-black border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] bg-[var(--accent)] text-black hover:bg-[var(--accent)] transition-all">
-                    <Plus className="mr-2 w-7 h-7" strokeWidth={3} />
+            <Link href="/app/new" className="relative z-10">
+                <Button size="lg" className="h-20 px-10 text-2xl font-black border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] bg-[var(--accent)] text-black hover:bg-[var(--accent)] transition-all">
+                    <Plus className="mr-2 w-8 h-8" strokeWidth={4} />
                     {t.dashboard.create_btn}
                 </Button>
             </Link>
@@ -90,23 +91,23 @@ export default async function DashboardPage(props: PageProps) {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 border-2 border-black dark:border-white bg-background shadow-[4px_4px_0px_0px_var(--secondary)]">
-                <p className="text-xs font-black uppercase opacity-50 mb-1 text-foreground">{t.dashboard.stats_notes}</p>
-                <p className="text-3xl font-black italic text-foreground">{notes.length}</p>
+            <div className="p-8 border-4 border-black dark:border-white bg-background shadow-[8px_8px_0px_0px_var(--secondary)] hover:rotate-1 transition-transform">
+                <p className="text-xs font-black uppercase opacity-60 mb-1 text-foreground tracking-widest">{t.dashboard.stats_notes}</p>
+                <p className="text-5xl font-black italic text-foreground">{notes.length}</p>
             </div>
-            <div className="p-6 border-2 border-black dark:border-white bg-background shadow-[4px_4px_0px_0px_var(--primary)]">
-                <p className="text-xs font-black uppercase opacity-50 mb-1 text-foreground">{t.dashboard.stats_ai}</p>
-                <p className="text-3xl font-black italic text-foreground">{totalGenerations}</p>
+            <div className="p-8 border-4 border-black dark:border-white bg-background shadow-[8px_8px_0px_0px_var(--primary)] hover:-rotate-1 transition-transform">
+                <p className="text-xs font-black uppercase opacity-60 mb-1 text-foreground tracking-widest">{t.dashboard.stats_ai}</p>
+                <p className="text-5xl font-black italic text-foreground">{totalGenerations}</p>
             </div>
-            <div className="p-6 border-2 border-black dark:border-white bg-background shadow-[4px_4px_0px_0px_var(--accent)]">
-                <p className="text-xs font-black uppercase opacity-50 mb-1 text-foreground">{t.dashboard.stats_gaps}</p>
-                <p className="text-3xl font-black italic text-foreground">{notes.filter(n => n.generations.length > 0).length}</p>
+            <div className="p-8 border-4 border-black dark:border-white bg-background shadow-[8px_8px_0px_0px_var(--accent)] hover:rotate-1 transition-transform">
+                <p className="text-xs font-black uppercase opacity-60 mb-1 text-foreground tracking-widest">{t.dashboard.stats_gaps}</p>
+                <p className="text-5xl font-black italic text-foreground">{notes.filter(n => n.generations.length > 0).length}</p>
             </div>
-            <Link href="/app/management" className="p-6 border-2 border-black dark:border-white bg-[var(--purple)] text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-transform">
-                <p className="text-xs font-black uppercase opacity-70 mb-1">{t.nav.management}</p>
+            <Link href="/app/management" className="p-8 border-4 border-black dark:border-white bg-[var(--purple)] text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all group">
+                <p className="text-xs font-black uppercase opacity-70 mb-1 tracking-widest">{t.nav.management}</p>
                 <div className="flex justify-between items-center">
-                    <p className="text-xl font-black italic truncate">{t.nav.management}</p>
-                    <Settings className="w-6 h-6" />
+                    <p className="text-2xl font-black italic truncate">{t.nav.management}</p>
+                    <Settings className="w-8 h-8 group-hover:rotate-90 transition-transform duration-500" />
                 </div>
             </Link>
         </div>

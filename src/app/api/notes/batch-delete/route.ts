@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const session = await auth();
-        if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const userId = session?.user?.id;
+        if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const { noteIds, folderIds } = await req.json();
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
                 await tx.generation.deleteMany({
                     where: { 
                         noteId: { in: noteIds },
-                        note: { userId: session.user.id } // Security check
+                        note: { userId: userId } // Security check
                     }
                 });
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
                 await tx.note.deleteMany({
                     where: { 
                         id: { in: noteIds },
-                        userId: session.user.id 
+                        userId: userId 
                     }
                 });
             }
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
                 const notesInFolders = await tx.note.findMany({
                     where: {
                         folderId: { in: folderIds },
-                        userId: session.user.id
+                        userId: userId
                     },
                     select: { id: true }
                 });
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
                 await tx.folder.deleteMany({
                     where: { 
                         id: { in: folderIds },
-                        userId: session.user.id 
+                        userId: userId 
                     }
                 });
             }

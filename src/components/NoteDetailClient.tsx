@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { 
     Sparkles, Brain, HelpCircle, RefreshCcw, MessageSquare, 
     Lightbulb, Coffee, BookOpen, Loader2, Zap, CheckCircle2, 
-    StopCircle, ArrowLeft
+    StopCircle, ArrowLeft, Clock
 } from "lucide-react";
 import { useTranslation } from "./LanguageProvider";
 import { toast } from "sonner";
@@ -281,41 +281,42 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
     }
 
     const tabs = [
-        { id: "outline", label: t.note.outline, icon: BookOpen, color: "#fb7185" },
-        { id: "flashcards", label: t.note.flashcards_tab, icon: Brain, color: "#2dd4bf" },
-        { id: "quiz", label: t.note.quiz, icon: HelpCircle, color: "#fcd34d" },
-        { id: "weakspots", label: t.note.weak_spots, icon: Zap, color: "#f97316" },
-        { id: "chat", label: t.note.chat, icon: MessageSquare, color: "#a78bfa" },
-        { id: "insights", label: t.note.insights, icon: Lightbulb, color: "#fb7185" },
+        { id: "outline", label: t.note.outline, icon: BookOpen, color: "var(--primary)" },
+        { id: "flashcards", label: t.note.flashcards_tab, icon: Brain, color: "var(--secondary)" },
+        { id: "quiz", label: t.note.quiz, icon: HelpCircle, color: "var(--accent)" },
+        { id: "weakspots", label: t.note.weak_spots, icon: Zap, color: "var(--purple)" },
+        { id: "chat", label: t.note.chat, icon: MessageSquare, color: "var(--blue)" },
+        { id: "insights", label: t.note.insights, icon: Lightbulb, color: "var(--primary)" },
     ];
 
     return (
         <div className="space-y-10 pb-20 relative">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b-4 border-black dark:border-white pb-8">
-                <div className="space-y-2">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b-8 border-black dark:border-white pb-10 relative">
+                <div className="absolute -top-20 -left-20 w-64 h-64 bg-[var(--primary)] rounded-full blur-[120px] opacity-10 pointer-events-none"></div>
+                <div className="space-y-4 relative z-10">
                    <div className="flex items-center gap-4 mb-2">
                         <Link href="/app">
-                            <Button variant="neutral" size="sm" className="h-8 px-3 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-background text-foreground">
-                                <ArrowLeft className="w-3 h-3 mr-1" /> {t.common.back}
+                            <Button variant="neutral" size="sm" className="h-10 px-4 border-2 border-black font-black text-xs uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-background text-foreground hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+                                <ArrowLeft className="w-4 h-4 mr-2" /> {t.common.back}
                             </Button>
                         </Link>
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 text-foreground">{t.note.neural_node}</div>
+                        <div className="bg-black dark:bg-white text-background dark:text-black px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em]">{t.note.neural_node}</div>
                    </div>
-                   <h1 className="text-5xl font-black uppercase italic tracking-tight leading-tight md:leading-[1.1] text-foreground">{note.title}</h1>
-                   <div className="flex items-center gap-4 text-xs font-bold text-zinc-500">
-                       <span>{isMounted ? new Date(note.createdAt).toLocaleDateString() : "..."}</span>
-                       <span className="uppercase tracking-widest text-[var(--primary)]">{lang === "vi" ? "Tiếng Việt" : "English"} {t.note.active}</span>
+                   <h1 className="text-6xl md:text-7xl font-black uppercase italic tracking-tighter leading-none text-foreground drop-shadow-[4px_4px_0px_rgba(0,0,0,0.1)]">{note.title}</h1>
+                   <div className="flex items-center gap-6 text-sm font-black text-zinc-500 uppercase tracking-widest">
+                       <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {isMounted ? new Date(note.createdAt).toLocaleDateString() : "..."}</span>
+                       <span className="text-[var(--primary)] bg-[var(--primary)]/10 px-2 py-0.5 border border-[var(--primary)]/20">{lang === "vi" ? "Tiếng Việt" : "English"} {t.note.active}</span>
                    </div>
                 </div>
                 
                 {isGenerating ? (
-                    <button onClick={stopGeneration} className="h-16 px-10 bg-red-500 text-white font-black text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 active:translate-x-1 active:translate-y-1 transition-all">
-                        <StopCircle className="w-6 h-6 animate-pulse" /> {t.note.abort}
+                    <button onClick={stopGeneration} className="h-20 px-12 bg-red-500 text-white font-black text-2xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex items-center gap-4 hover:bg-red-600 active:translate-x-1 active:translate-y-1 transition-all group">
+                        <StopCircle className="w-8 h-8 group-hover:scale-110 transition-transform" /> {t.note.abort}
                     </button>
                 ) : (
-                    <Button onClick={() => handleGenerate("all")} size="lg" className="h-16 px-10 text-xl font-black bg-[var(--primary)] text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
-                        <Sparkles className="mr-2" />
+                    <Button onClick={() => handleGenerate("all")} size="lg" className="h-20 px-12 text-2xl font-black bg-[var(--primary)] text-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all">
+                        <Sparkles className="mr-3 w-8 h-8" />
                         {generation ? t.note.regenerate_btn : t.note.initialize}
                     </Button>
                 )}
@@ -325,24 +326,25 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
             {isGenerating && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="lg:col-span-2 space-y-4">
-                        <div className="flex justify-between items-center font-black text-xs uppercase italic text-foreground">
-                            <span className="flex items-center gap-2"><Zap className="w-4 h-4 text-[var(--primary)] animate-pulse" /> {streamStatus.message}</span>
-                            <span className="bg-foreground text-background px-2 py-0.5">{streamStatus.progress}%</span>
+                        <div className="flex justify-between items-center font-black text-sm uppercase italic text-foreground tracking-widest">
+                            <span className="flex items-center gap-3"><Zap className="w-5 h-5 text-[var(--primary)] animate-pulse" /> {streamStatus.message}</span>
+                            <span className="bg-foreground text-background px-3 py-1">{streamStatus.progress}%</span>
                         </div>
-                        <div className="h-10 border-4 border-black dark:border-white bg-background shadow-[6px_6px_0px_0px_#000] dark:shadow-[6px_6px_0px_0px_#fff] relative overflow-hidden">
+                        <div className="h-12 border-4 border-black dark:border-white bg-background shadow-[8px_8px_0px_0px_#000] dark:shadow-[8px_8px_0px_0px_#fff] relative overflow-hidden">
                             <div className="h-full bg-[var(--primary)] transition-all duration-1000 ease-in-out" style={{ width: `${streamStatus.progress}%` }} />
+                            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.3)_50%,transparent_100%)] w-20 animate-[marquee_2s_linear_infinite]" />
                         </div>
                     </div>
-                    <div className="border-4 border-black dark:border-white p-4 bg-background shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] flex flex-col justify-center">
-                        <div className="space-y-1 font-mono text-[9px] font-bold uppercase text-foreground">
-                            <div className={cn("flex items-center gap-2", streamingOutline ? "text-green-600" : "text-zinc-400")}>
-                                {streamingOutline ? <CheckCircle2 className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />} Outline Map
+                    <div className="border-4 border-black dark:border-white p-6 bg-background shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] flex flex-col justify-center">
+                        <div className="space-y-2 font-mono text-[10px] font-black uppercase text-foreground">
+                            <div className={cn("flex items-center gap-3", streamingOutline ? "text-green-600" : "text-zinc-400")}>
+                                {streamingOutline ? <CheckCircle2 className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />} Outline Map
                             </div>
-                            <div className={cn("flex items-center gap-2", streamingFlashcards.length > 0 ? "text-green-600" : "text-zinc-400")}>
-                                {streamingFlashcards.length > 0 ? <CheckCircle2 className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />} Flashcards: {streamingFlashcards.length}
+                            <div className={cn("flex items-center gap-3", streamingFlashcards.length > 0 ? "text-green-600" : "text-zinc-400")}>
+                                {streamingFlashcards.length > 0 ? <CheckCircle2 className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />} Flashcards: {streamingFlashcards.length}
                             </div>
-                            <div className={cn("flex items-center gap-2", streamingQuiz.length > 0 ? "text-green-600" : "text-zinc-400")}>
-                                {streamingQuiz.length > 0 ? <CheckCircle2 className="w-3 h-3" /> : <Loader2 className="w-3 h-3 animate-spin" />} Quiz Engine: {streamingQuiz.length}
+                            <div className={cn("flex items-center gap-3", streamingQuiz.length > 0 ? "text-green-600" : "text-zinc-400")}>
+                                {streamingQuiz.length > 0 ? <CheckCircle2 className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />} Quiz Engine: {streamingQuiz.length}
                             </div>
                         </div>
                     </div>
@@ -351,17 +353,18 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
 
             {/* Main Content */}
             {!generation && !isGenerating && !streamingOutline ? (
-                 <Card className="text-center py-32 border-4 border-dashed border-zinc-300 bg-background shadow-none">
-                     <CardContent className="space-y-8">
-                        <div className="w-24 h-24 bg-background border-2 border-black dark:border-white rounded-3xl flex items-center justify-center mx-auto shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] rotate-3">
-                            <Coffee className="w-12 h-12 text-[var(--primary)]" />
+                 <Card className="text-center py-40 border-4 border-dashed border-zinc-300 bg-background shadow-none">
+                     <CardContent className="space-y-10">
+                        <div className="w-32 h-32 bg-background border-4 border-black dark:border-white rounded-3xl flex items-center justify-center mx-auto shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)] rotate-6 group hover:rotate-0 transition-transform duration-500">
+                            <Coffee className="w-16 h-16 text-[var(--primary)] group-hover:scale-110 transition-transform" />
                         </div>
-                        <h2 className="text-4xl font-black uppercase italic text-foreground">{t.note.empty_title}</h2>
+                        <h2 className="text-5xl font-black uppercase italic text-foreground tracking-tighter">{t.note.empty_title}</h2>
+                        <p className="text-zinc-500 font-bold max-w-md mx-auto text-xl">Initialize your study materials to get started.</p>
                      </CardContent>
                  </Card>
             ) : (
                 <div className="space-y-10">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -372,13 +375,22 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
                                             (tab.id === "chat") || (tab.id === "insights" && (generation || streamingOutline));
 
                             return (
-                                <button key={tab.id} data-tab-id={tab.id} disabled={!isReady && isGenerating} onClick={() => setActiveTab(tab.id)}
-                                    className={cn("flex flex-col items-center justify-center gap-2 p-6 border-4 border-black dark:border-white transition-all relative bg-background",
-                                        isActive ? "bg-background text-foreground translate-x-[-4px] translate-y-[-4px] shadow-[8px_8px_0px_0px_var(--primary)]" : "bg-zinc-100 dark:bg-zinc-900 text-zinc-400",
+                                <button 
+                                    key={tab.id} 
+                                    data-tab-id={tab.id} 
+                                    disabled={!isReady && isGenerating} 
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={cn(
+                                        "flex flex-col items-center justify-center gap-3 p-8 border-4 border-black dark:border-white transition-all relative bg-background",
+                                        isActive 
+                                            ? "translate-x-[-6px] translate-y-[-6px] shadow-[10px_10px_0px_0px_black] dark:shadow-[10px_10px_0px_0px_white]" 
+                                            : "bg-zinc-100 dark:bg-zinc-900 text-zinc-400 opacity-70 hover:opacity-100",
                                         !isReady && isGenerating && "grayscale opacity-30"
-                                    )}>
-                                    <Icon className={cn("w-6 h-6", isActive ? "text-[var(--primary)]" : "")} strokeWidth={3} />
-                                    <span className="font-black uppercase text-[10px] tracking-widest">{tab.label}</span>
+                                    )}
+                                    style={isActive ? { backgroundColor: tab.color, color: 'black' } : {}}
+                                >
+                                    <Icon className={cn("w-8 h-8", isActive ? "text-black" : "")} strokeWidth={4} />
+                                    <span className="font-black uppercase text-xs tracking-widest">{tab.label}</span>
                                 </button>
                             );
                         })}
