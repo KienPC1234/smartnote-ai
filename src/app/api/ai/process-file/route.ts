@@ -3,7 +3,8 @@ import { processFile } from "@/lib/file-processor";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // OCR and large PDFs can take time
+export const runtime = "nodejs"; // Force Node.js runtime for canvas compatibility
+export const maxDuration = 60; 
 
 export async function POST(req: Request) {
     try {

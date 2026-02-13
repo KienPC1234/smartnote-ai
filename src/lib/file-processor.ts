@@ -6,16 +6,18 @@ export const processFile = async (file: File | Blob, onProgress?: (p: string) =>
   const fileName = (file as File).name || "file.png";
   const extension = fileName.split('.').pop()?.toLowerCase();
 
-  console.log(`[PROCESSOR] Extension: ${extension}`);
+  if (onProgress) onProgress(`Starting ${extension?.toUpperCase()} analysis...`);
 
   switch (extension) {
     case 'pdf':
       return await processPDF(file, onProgress);
     case 'docx':
+      if (onProgress) onProgress("Reading Document structure...");
       return await processDocx(file);
     case 'xlsx':
     case 'xls':
     case 'csv':
+      if (onProgress) onProgress("Parsing Spreadsheet data...");
       return await processSheet(file);
     case 'png':
     case 'jpg':
@@ -23,78 +25,137 @@ export const processFile = async (file: File | Blob, onProgress?: (p: string) =>
     case 'webp':
       return await processImage(file, onProgress);
     default:
-      throw new Error("Unsupported file format");
+      throw new Error(`Unsupported file format: ${extension}`);
   }
 };
 
 async function processImage(file: File | Blob | Buffer, onProgress?: (p: string) => void): Promise<string> {
-  const worker = await createWorker('vie+eng');
+  if (onProgress) onProgress("Initializing OCR Modules...");
 
-  if (onProgress) {
-    onProgress("Initializing OCR...");
-  }
-
-  let buffer: Buffer;
+  let data: Buffer | Uint8Array;
   if (Buffer.isBuffer(file)) {
-      buffer = file;
+      data = file;
   } else {
       const arrayBuffer = await file.arrayBuffer();
-      buffer = Buffer.from(arrayBuffer);
+      data = new Uint8Array(arrayBuffer);
   }
 
-  const { data: { text } } = await worker.recognize(buffer);
-  await worker.terminate();
-  return text;
+  const worker = await createWorker({
+    logger: m => {
+      if (onProgress && m.status === 'recognizing text') {
+        onProgress(`OCR Scanning: ${Math.round(m.progress * 100)}%`);
+      }
+    },
+    errorHandler: e => console.error("[TESSERACT WORKER ERROR]", e),
+  });
+
+  try {
+    // Step 1: Explicitly load languages
+    await worker.loadLanguage('vie+eng');
+    
+    // Step 2: Explicitly initialize the engine
+    await worker.initialize('vie+eng');
+
+    // Step 3: Recognize with pre-initialized worker
+    const { data: { text } } = await worker.recognize(data);
+
+    await worker.terminate();
+    return text;
+  } catch (error: any) {
+    // Crucial: always terminate to prevent memory leaks on failure
+    await worker.terminate();
+    console.error("[OCR ERROR]", error);
+    throw new Error(`OCR Processing failed: ${error.message}`);
+  }
 }
 
 async function processPDF(file: File | Blob, onProgress?: (p: string) => void): Promise<string> {
-  // Use the legacy build which is specifically designed for Node.js environments
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const { createCanvas } = await import('canvas');
-
-  const arrayBuffer = await file.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-
-  // We explicitly disable the worker to prevent it from trying to load an external .mjs file
-  // This forces PDF.js to run in the main thread (fake worker mode) without dynamic imports
-  const loadingTask = pdfjsLib.getDocument({
-    data: uint8Array,
-    disableWorker: true, 
-    useSystemFonts: true,
-    disableFontFace: true,
-    isEvalSupported: false,
-  } as any);
-
   try {
-    const pdf = await loadingTask.promise;
-    let fullText = "";
+    if (onProgress) onProgress("Initializing Neural Uplink...");
 
-    console.log(`[PDF] Document loaded. Pages: ${pdf.numPages}`);
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const canvasMod = await import('canvas');
+    const { createCanvas, Image, ImageData } = canvasMod;
+
+    // Polyfills for Node.js environment
+    (globalThis as any).Image = Image;
+    (globalThis as any).ImageData = ImageData;
+
+    // Factory to manage canvas lifecycle correctly for PDF.js
+    class NodeCanvasFactory {
+      create(width: number, height: number) {
+        const canvas = createCanvas(Math.ceil(width), Math.ceil(height));
+        const context = canvas.getContext('2d');
+        return { canvas, context };
+      }
+      reset(canvasAndContext: any, width: number, height: number) {
+        canvasAndContext.canvas.width = Math.ceil(width);
+        canvasAndContext.canvas.height = Math.ceil(height);
+      }
+      destroy(canvasAndContext: any) {
+        canvasAndContext.canvas.width = 0;
+        canvasAndContext.canvas.height = 0;
+        canvasAndContext.canvas = null;
+        canvasAndContext.context = null;
+      }
+    }
+
+    if (typeof window === 'undefined') {
+        await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = ''; 
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    const loadingTask = pdfjsLib.getDocument({
+      data: uint8Array,
+      disableWorker: true, 
+      useSystemFonts: true,
+      disableFontFace: true,
+      isEvalSupported: false,
+    });
+
+    const pdf = await loadingTask.promise;
+    if (onProgress) onProgress(`PDF Synced: ${pdf.numPages} pages identified.`);
+
+    let fullText = "";
+    const canvasFactory = new NodeCanvasFactory();
 
     for (let i = 1; i <= pdf.numPages; i++) {
-      if (onProgress) onProgress(`Rendering Page ${i}/${pdf.numPages}`);
-      console.log(`[PDF] Rendering Page ${i}...`);
-      
+      if (onProgress) onProgress(`Analyzing Page ${i}/${pdf.numPages}...`);
       const page = await pdf.getPage(i);
-      
-      // Render to image for OCR
-      const viewport = page.getViewport({ scale: 2.0 });
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const context = canvas.getContext('2d');
 
-      await page.render({
-        canvasContext: context as any,
-        viewport: viewport,
-      } as any).promise;
+      // --- HYBRID APPROACH: Try TextContent First ---
+      const textContent = await page.getTextContent();
+      const extractedText = textContent.items.map((item: any) => (item as any).str).join(" ").trim();
 
-      const buffer = canvas.toBuffer('image/png');
-      
-      if (onProgress) onProgress(`OCR Analyzing Page ${i}/${pdf.numPages}`);
-      const ocrText = await processImage(buffer);
+      // If text exists and seems sufficient, use it. Otherwise fallback to OCR.
+      if (extractedText.length > 100) {
+          console.log(`[PDF] Page ${i}: Using direct text extraction (${extractedText.length} chars)`);
+          fullText += `--- Page ${i} ---\n${extractedText}\n\n`;
+      } else {
+          console.log(`[PDF] Page ${i}: Text content sparse. Initiating OCR...`);
+          if (onProgress) onProgress(`Scanning Page ${i} via Optical Sensor...`);
 
-      fullText += `--- Page ${i} ---\n${ocrText}\n\n`;
+          const viewport = page.getViewport({ scale: 1.5 });
+          const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
+
+          await page.render({
+            canvasContext: context as any,
+            viewport,
+            canvasFactory: canvasFactory as any,
+          }).promise;
+
+          const buffer = canvas.toBuffer('image/png');
+          const ocrText = await processImage(buffer, onProgress);
+          fullText += `--- Page ${i} (OCR) ---\n${ocrText}\n\n`;
+
+          canvasFactory.destroy({ canvas, context });
+      }
     }
-    
+
+    if (onProgress) onProgress("Neural Extraction Complete.");
     return fullText;
   } catch (error: any) {
     console.error("[PDF PROCESS ERROR]", error);

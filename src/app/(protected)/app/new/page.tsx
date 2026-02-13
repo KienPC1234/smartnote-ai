@@ -21,16 +21,42 @@ export default function NewNotePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState("");
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!title) setTitle(file.name.replace(/\.[^/.]+$/, ""));
+    
     setIsProcessingFile(true);
+    setProcessingStatus("Initializing Uplink...");
+
     try {
       const formData = new FormData();
       formData.append("file", file);
+      
+      // Simulated steps for better UX since file processing is a single long request
+      const statusSteps = [
+        "Uploading Neural Data...",
+        "Deconstructing PDF structure...",
+        "Rendering Optical Layers...",
+        "Scanning via OCR modules...",
+        "Synthesizing text nodes...",
+        "Finalizing extraction..."
+      ];
+      
+      let step = 0;
+      const interval = setInterval(() => {
+          if (step < statusSteps.length - 1) {
+              setProcessingStatus(statusSteps[step]);
+              step++;
+          }
+      }, 3000);
+
       const res = await fetch("/api/ai/process-file", { method: "POST", body: formData });
+      
+      clearInterval(interval);
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to process file.");
@@ -42,6 +68,7 @@ export default function NewNotePage() {
       toast.error(error.message || "Failed to process file.");
     } finally {
       setIsProcessingFile(false);
+      setProcessingStatus("");
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -174,8 +201,11 @@ export default function NewNotePage() {
                     >
                         {isProcessingFile ? (
                             <>
-                                <Loader2 className="animate-spin w-8 h-8 text-primary" strokeWidth={3} />
-                                <span className="text-[10px] font-bold uppercase italic">Processing...</span>
+                                <Loader2 className="animate-spin w-10 h-10 text-primary" strokeWidth={3} />
+                                <div className="text-center">
+                                    <span className="text-[10px] font-bold uppercase italic block text-primary">{processingStatus}</span>
+                                    <span className="text-[8px] font-black uppercase opacity-40">Do not disconnect...</span>
+                                </div>
                             </>
                         ) : (
                             <>
