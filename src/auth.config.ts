@@ -1,5 +1,4 @@
 import type { NextAuthConfig } from "next-auth"
-import prisma from "@/lib/prisma"
 
 export const authConfig = {
   trustHost: true,
@@ -23,17 +22,20 @@ export const authConfig = {
     },
     async jwt({ token, user, trigger, session }) {
         if (user) {
+            console.log("[DEBUG][JWT] User signed in, setting token.id:", user.id);
             token.id = user.id;
             token.name = user.name;
         }
         // Quan trọng: Xử lý khi Client gọi update()
         if (trigger === "update" && session?.name) {
+            console.log("[DEBUG][JWT] Update trigger, setting token.name:", session.name);
             token.name = session.name;
         }
         return token;
     },
     async session({ session, token }) {
         if (session.user && token.id) {
+            console.log("[DEBUG][SESSION] Setting session.user.id from token:", token.id);
             (session.user as any).id = token.id as string;
             session.user.name = token.name as string;
         }

@@ -10,6 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   trustHost: true,
   adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -22,22 +23,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        try {
+            console.log("[DEBUG][AUTH] Authorize started for:", credentials?.email);
+            if (!credentials?.email || !credentials?.password) {
+                console.log("[DEBUG][AUTH] Missing credentials");
+                return null;
+            }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+            const user = await prisma.user.findUnique({
+              where: { email: credentials.email as string },
+            });
 
-        if (!user || !user.passwordHash) return null;
+            if (!user) {
+                console.log("[DEBUG][AUTH] User not found:", credentials.email);
+                return null;
+            }
+            
+            if (!user.passwordHash) {
+                console.log("[DEBUG][AUTH] User has no password hash (maybe social login only):", credentials.email);
+                return null;
+            }
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
+            const isValid = await bcrypt.compare(
+              credentials.password as string,
+              user.passwordHash
+            );
 
-        if (!isValid) return null;
+            if (!isValid) {
+                console.log("[DEBUG][AUTH] Invalid password for:", credentials.email);
+                return null;
+            }
 
-        return user;
+            console.log("[DEBUG][AUTH] Authorize success for:", user.email);
+            return {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+            };
+        } catch (error) {
+            console.error("[DEBUG][AUTH] Authorize error:", error);
+            return null;
+        }
       },
     }),
   ],
