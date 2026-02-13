@@ -5,7 +5,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { Zap, Languages, User, Settings, LogOut, ChevronDown, AlertTriangle, BookOpen, Globe } from "lucide-react";
+import { Zap, Languages, User, Settings, LogOut, ChevronDown, AlertTriangle, BookOpen, Globe, Shield } from "lucide-react";
 import { useTranslation } from "./LanguageProvider";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { EditProfileDialog } from "./EditProfileDialog";
@@ -99,6 +99,16 @@ export default function Navbar() {
                     sideOffset={8}
                     className="min-w-[220px] bg-background border-4 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] p-1 z-50 animate-in fade-in slide-in-from-top-2"
                 >
+                    <DropdownMenu.Item asChild>
+                        <Link 
+                            href="/app/profile" 
+                            className="flex items-center gap-3 p-4 font-bold hover:bg-[var(--purple)] hover:text-white dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs"
+                        >
+                            <Shield className="w-5 h-5" />
+                            {t.nav.security} & {t.nav.profile}
+                        </Link>
+                    </DropdownMenu.Item>
+
                     <DropdownMenu.Item asChild>
                         <EditProfileDialog>
                             <button className="w-full flex items-center gap-3 p-4 font-bold hover:bg-[var(--accent)] hover:text-black dark:text-foreground dark:hover:text-black outline-none transition-colors border-b-2 border-black dark:border-white/20 uppercase text-xs">

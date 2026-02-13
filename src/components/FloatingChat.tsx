@@ -172,7 +172,7 @@ export function FloatingChat() {
             }
         }
     } catch (e: any) {
-        toast.error("Neural Error", { description: e.message });
+        toast.error(chatConfig.neural_error, { description: e.message });
     } finally {
         setIsLoading(false);
     }

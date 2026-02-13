@@ -55,7 +55,7 @@ export default function LandingPage() {
                         <ArrowRight className="ml-2 w-8 h-8" />
                     </Button>
                 </Link>
-                <Link href="/api/demo_video">
+                <Link href="/demo_video">
                     <Button variant="neutral" size="lg" className="h-20 px-12 text-xl font-black border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
                         <Play className="mr-2 w-6 h-6 fill-current" />
                         {t.landing.demo_video}

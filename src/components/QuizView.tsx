@@ -136,8 +136,8 @@ export default function QuizView({
   const isGeneratingPlaceholder = isGenerating && (questions.length === 0 || currentIdx === questions.length);
   const currentQ = questions[currentIdx];
 
-  const waitingMessage = lang === "vi" ? "Đang phân tích kết quả bài kiểm tra qua Neural Network..." : "Analyzing quiz results via Neural Network...";
-  const readyMessage = lang === "vi" ? "Phân tích Neural đã sẵn sàng trong tab Phân tích kiến thức." : "Neural Analysis ready in Knowledge Analysis tab.";
+  const waitingMessage = t.note.quiz_content.waiting_msg;
+  const readyMessage = t.note.quiz_content.ready_msg;
 
   useEffect(() => {
     if (showResults) {
@@ -153,7 +153,7 @@ export default function QuizView({
     } else {
         setAssessmentText("");
     }
-  }, [showResults, isAnalyzing, lang]);
+  }, [showResults, isAnalyzing]);
 
   const handleSelect = (idx: number) => {
     if (isAnswered || !currentQ) return;
@@ -224,24 +224,24 @@ export default function QuizView({
                     {questions.length > 0 ? Math.round((score/questions.length)*100) : 0}%
                 </h2>
                 <p className="text-2xl font-black uppercase tracking-widest mb-8 text-black opacity-80">
-                    Neural Accuracy: {score} / {questions.length}
+                    {t.note.quiz_content.accuracy}: {score} / {questions.length}
                 </p>
                 
                 <div className="p-6 bg-white/40 dark:bg-black/20 border-4 border-black dark:border-white font-bold italic mb-8 max-w-2xl mx-auto text-black dark:text-white">
                     <Sparkles className="w-6 h-6 mx-auto mb-2" />
-                    <span className="uppercase text-xs block opacity-60">AI Neural Assessment:</span>
+                    <span className="uppercase text-xs block opacity-60">{t.note.quiz_content.assessment_label}</span>
                     {assessmentText}
                     <span className="inline-block w-1.5 h-4 bg-black dark:bg-white animate-pulse ml-1" />
                     
                     {isAnalyzing && (
                         <div className="mt-4 flex items-center justify-center gap-2 text-xs uppercase animate-pulse">
-                            <Loader2 className="w-4 h-4 animate-spin" /> Identifying Knowledge Gaps...
+                            <Loader2 className="w-4 h-4 animate-spin" /> {t.note.quiz_content.identifying_gaps}
                         </div>
                     )}
                 </div>
 
                 <Button onClick={reset} variant="neutral" className="h-14 px-8 border-4 border-black dark:border-white font-black uppercase flex items-center gap-2 mx-auto">
-                    <RefreshCcw className="w-5 h-5" /> RE-CALIBRATE
+                    <RefreshCcw className="w-5 h-5" /> {t.note.quiz_content.recalibrate}
                 </Button>
             </div>
         </div>
@@ -252,7 +252,7 @@ export default function QuizView({
       return (
           <div className="flex flex-col items-center justify-center py-32 gap-6 opacity-40">
               <Loader2 className="w-12 h-12 animate-spin" />
-              <p className="font-black uppercase tracking-[0.3em] text-foreground">Waiting for Modules...</p>
+              <p className="font-black uppercase tracking-[0.3em] text-foreground">{t.note.quiz_content.waiting_modules}</p>
           </div>
       );
   }
@@ -262,14 +262,14 @@ export default function QuizView({
         <div className="relative animate-in slide-in-from-bottom-10 fade-in duration-700">
             {/* Question Index Badge */}
             <div className="absolute -top-6 -left-6 bg-foreground text-background font-black px-4 py-2 text-xl italic border-2 border-black dark:border-white z-10 shadow-[4px_4px_0px_0px_var(--primary)]">
-                STEP {currentIdx + 1}/{isGenerating ? "?" : questions.length}
+                {t.note.quiz_content.step} {currentIdx + 1}/{isGenerating ? "?" : questions.length}
             </div>
 
             <div className="bg-background border-4 border-black dark:border-white p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] dark:shadow-[12px_12px_0px_0px_rgba(255,255,255,1)]">
                 {isGeneratingPlaceholder ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-6">
                         <div className="w-16 h-16 border-8 border-black dark:border-white border-t-[var(--primary)] rounded-full animate-spin" />
-                        <h3 className="text-3xl font-black uppercase italic animate-pulse text-foreground">Synthesizing Question #{currentIdx + 1}...</h3>
+                        <h3 className="text-3xl font-black uppercase italic animate-pulse text-foreground">{t.note.quiz_content.synthesizing_q} #{currentIdx + 1}...</h3>
                     </div>
                 ) : (
                     <>
@@ -317,7 +317,7 @@ export default function QuizView({
                                         : <XCircle className="w-8 h-8 text-red-500" />
                                     }
                                     <span className="font-black uppercase italic text-xl text-foreground">
-                                        {selectedIdx === currentQ.answer_index ? "Sync Successful" : "Neural Mismatch"}
+                                        {selectedIdx === currentQ.answer_index ? t.note.quiz_content.sync_success : t.note.quiz_content.mismatch}
                                     </span>
                                 </div>
                                 <p className="font-bold text-lg mb-6 leading-relaxed italic border-l-8 border-[var(--primary)] pl-6 text-foreground">
@@ -327,7 +327,7 @@ export default function QuizView({
                                     onClick={handleNext}
                                     className="w-full h-14 bg-foreground text-background font-black uppercase flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                                 >
-                                    {currentIdx < questions.length - 1 ? "Next Module" : (isGenerating ? "Wait for more questions..." : "View Final Assessment")} <ArrowRight />
+                                    {currentIdx < questions.length - 1 ? t.note.quiz_content.next_module : (isGenerating ? t.note.quiz_content.wait_more : t.note.quiz_content.view_assessment)} <ArrowRight />
                                 </button>
                             </div>
                         )}
