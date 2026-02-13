@@ -32,12 +32,12 @@ export const processFile = async (file: File | Blob, onProgress?: (p: string) =>
 async function processImage(file: File | Blob | Buffer, onProgress?: (p: string) => void): Promise<string> {
   if (onProgress) onProgress("Initializing OCR Modules...");
 
-  let data: Buffer | Uint8Array;
+  let data: Buffer;
   if (Buffer.isBuffer(file)) {
       data = file;
   } else {
       const arrayBuffer = await file.arrayBuffer();
-      data = new Uint8Array(arrayBuffer);
+      data = Buffer.from(arrayBuffer);
   }
 
   const worker = await createWorker({
@@ -101,6 +101,7 @@ async function processPDF(file: File | Blob, onProgress?: (p: string) => void): 
     }
 
     if (typeof window === 'undefined') {
+        // @ts-ignore
         await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
         (pdfjsLib as any).GlobalWorkerOptions.workerSrc = ''; 
     }
@@ -114,7 +115,7 @@ async function processPDF(file: File | Blob, onProgress?: (p: string) => void): 
       useSystemFonts: true,
       disableFontFace: true,
       isEvalSupported: false,
-    });
+    } as any);
 
     const pdf = await loadingTask.promise;
     if (onProgress) onProgress(`PDF Synced: ${pdf.numPages} pages identified.`);
@@ -145,7 +146,7 @@ async function processPDF(file: File | Blob, onProgress?: (p: string) => void): 
             canvasContext: context as any,
             viewport,
             canvasFactory: canvasFactory as any,
-          }).promise;
+          } as any).promise;
 
           const buffer = canvas.toBuffer('image/png');
           const ocrText = await processImage(buffer, onProgress);
