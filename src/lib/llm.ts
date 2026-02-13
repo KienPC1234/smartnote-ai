@@ -62,4 +62,25 @@ export const llm = {
       },
     });
   },
+
+  chatText: async (system: string, user: string, options: StreamOpts = {}): Promise<string> => {
+    const model = process.env.LLM_MODEL || "gemma3:12b";
+    try {
+      const response = await ollama.chat({
+        model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user }
+        ],
+        options: {
+          temperature: options.temperature ?? 0.3,
+          top_p: options.top_p ?? 0.9,
+        }
+      });
+      return response.message.content;
+    } catch (error) {
+      console.error("[LLM_CHAT_TEXT_ERROR]", error);
+      throw error;
+    }
+  },
 };

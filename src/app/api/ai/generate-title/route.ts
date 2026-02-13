@@ -13,16 +13,24 @@ export async function POST(req: Request) {
 
         const sys = SYSTEM_PROMPT(lang || "en");
         const prompt = `
-            Task: Create a short, catchy, and professional title for the following content.
-            Objective: The title should summarize the main topic in 3-7 words.
-            Rules: Return ONLY the title text. No quotes, no intro.
+            Task: Create a short, catchy, and professional title for the provided content.
+            Objective: Summarize the main topic in 3-7 words.
+            Rules: 
+            1. Return ONLY the plain title text.
+            2. NO Markdown formatting (NO #, NO **, NO _).
+            3. NO quotes, NO intro, NO period at the end.
             
             Content:
             ${sourceText.substring(0, 2000)}
         `;
 
         const title = await llm.chatText(sys, prompt);
-        return NextResponse.json({ title: title.trim().replace(/^"(.*)"$/, '$1') });
+        // Robust cleaning: remove quotes and any accidental markdown artifacts
+        const cleanTitle = title.trim()
+            .replace(/^["'](.*)["']$/, '$1')
+            .replace(/[#*_]/g, ''); 
+            
+        return NextResponse.json({ title: cleanTitle });
     } catch (error) {
         return NextResponse.json({ error: "Title generation failed" }, { status: 500 });
     }

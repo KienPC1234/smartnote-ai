@@ -305,7 +305,7 @@ export const dictionaries = {
       title: "Khởi tạo ghi chú",
       back_btn: "Quay lại",
       label_title: "Tiêu đề",
-      ai_title_btn: "AI Đề xuất",
+      ai_title_btn: "AI Đề xuất tiêu đề",
       label_content: "Nội dung ghi chú",
       placeholder_title: "Ví dụ: Lịch sử trí tuệ nhân tạo...",
       placeholder_content: "Dán văn bản hoặc tải lên tệp tin...",
