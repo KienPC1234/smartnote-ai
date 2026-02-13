@@ -505,7 +505,7 @@ export default function NoteDetailClient({ note, initialGeneration, autoGenerate
                         )}
 
                         {activeTab === "chat" && <ChatBuddy noteId={note.id} />}
-                        {activeTab === "insights" && (generation || streamingOutline) && <NeuralInsights generation={generation || {}} />}
+                        {activeTab === "insights" && (generation || streamingOutline) && <NeuralInsights generation={generation || {}} isGenerating={isGenerating} />}
                         
                         {(generation || streamingOutline) && !isGenerating && (activeTab !== "chat" && activeTab !== "insights") && (
                             <div className="mt-12 border-t-4 border-black dark:border-white pt-8 flex flex-col md:flex-row gap-4 items-end animate-in fade-in slide-in-from-bottom-4">

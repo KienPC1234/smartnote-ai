@@ -9,7 +9,7 @@ import { useTranslation } from "./LanguageProvider";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
-  role: "user" | "bot";
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -27,10 +27,10 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
       try {
         setMessages(JSON.parse(saved));
       } catch (e) {
-        setMessages([{ role: "bot", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }]);
+        setMessages([{ role: "assistant", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }]);
       }
     } else {
-      setMessages([{ role: "bot", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }]);
+      setMessages([{ role: "assistant", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }]);
     }
   }, [noteId]);
 
@@ -48,7 +48,7 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
   }, [messages, isLoading]);
 
   const handleReset = () => {
-    const defaultMsg: Message[] = [{ role: "bot", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }];
+    const defaultMsg: Message[] = [{ role: "assistant", content: "Hi! I'm your AI Study Buddy. Ask me anything about this note!" }];
     setMessages(defaultMsg);
     localStorage.removeItem(`chat_history_${noteId}`);
   };
@@ -92,14 +92,14 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
                     const parsed = JSON.parse(dataStr);
                     const content = parsed.choices?.[0]?.delta?.content || "";
                     if (!hasStarted && content) {
-                        setMessages(prev => [...prev, { role: "bot", content: "" }]);
+                        setMessages(prev => [...prev, { role: "assistant", content: "" }]);
                         hasStarted = true;
                     }
                     accumulated += content;
                     if (hasStarted) {
                         setMessages(prev => {
                             const next = [...prev];
-                            next[next.length - 1] = { role: "bot", content: accumulated };
+                            next[next.length - 1] = { role: "assistant", content: accumulated };
                             return next;
                         });
                     }
@@ -108,7 +108,7 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
         }
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: "bot", content: "Sorry, I'm having trouble connecting to the system." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I'm having trouble connecting to the system." }]);
     } finally {
       setIsLoading(false);
     }

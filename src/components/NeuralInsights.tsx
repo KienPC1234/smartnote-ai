@@ -41,17 +41,29 @@ const TypewriterMarkdown = ({ content, isGenerating }: { content: string, isGene
             setDisplayedContent("");
             return;
         }
-        let i = 0;
-        const interval = setInterval(() => {
-            setDisplayedContent(content.slice(0, i));
-            i += 5;
-            if (i > content.length) {
-                setDisplayedContent(content); 
-                clearInterval(interval);
-            }
-        }, 10);
-        return () => clearInterval(interval);
-    }, [content]);
+
+        // Nếu đang generate, hiển thị trực tiếp để hỗ trợ streaming mượt mà
+        if (isGenerating) {
+            setDisplayedContent(content);
+            return;
+        }
+
+        // Chỉ chạy hiệu ứng máy đánh chữ khi đã có kết quả cuối cùng và chưa hiển thị xong
+        if (displayedContent.length < content.length) {
+            let i = displayedContent.length;
+            const interval = setInterval(() => {
+                setDisplayedContent(content.slice(0, i));
+                i += 5;
+                if (i > content.length) {
+                    setDisplayedContent(content); 
+                    clearInterval(interval);
+                }
+            }, 10);
+            return () => clearInterval(interval);
+        } else {
+            setDisplayedContent(content);
+        }
+    }, [content, isGenerating]);
 
     if (isGenerating && !content) return <NeuralLoading />;
 

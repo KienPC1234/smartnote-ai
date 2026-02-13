@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { llm } from "@/lib/llm";
-import { SYSTEM_PROMPT, WEAKSPOTS_PROMPT } from "@/lib/prompts";
+import { normalizeLang, SYSTEM_PROMPT, WEAKSPOTS_PROMPT } from "@/lib/prompts";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const { id } = await params;
     const { quizResults, lang } = await req.json();
+    const langNorm = normalizeLang(lang);
 
     const note = await prisma.note.findUnique({ where: { id } });
     if (!note || note.userId !== session.user.id) return new Response("Not found", { status: 404 });
@@ -22,10 +23,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     if (!latestGen) return new Response("No generation found", { status: 404 });
 
-    const sys = SYSTEM_PROMPT(lang || "en");
-    if (!WEAKSPOTS_PROMPT) return new Response("WEAKSPOTS_PROMPT is missing", { status: 500 });
+    const sys = SYSTEM_PROMPT(langNorm);
+    const promptTemplate = WEAKSPOTS_PROMPT(langNorm);
+    if (!promptTemplate) return new Response("WEAKSPOTS_PROMPT is missing", { status: 500 });
 
-    const prompt = WEAKSPOTS_PROMPT
+    const prompt = promptTemplate
         .replace("{{SOURCE_TEXT}}", note.sourceText)
         .replace("{{QUIZ_RESULTS}}", JSON.stringify(quizResults, null, 2));
 
@@ -60,7 +62,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         const dataStr = line.slice(6).trim();
                         if (dataStr === "[DONE]") break;
                         try {
-                            const content = JSON.parse(dataStr).choices?.[0]?.delta?.content || "";
+                            const parsed = JSON.parse(dataStr);
+                            const content = parsed.choices?.[0]?.delta?.content || "";
                             weakspotsMd += content;
                             controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({ chunk: content })}\n\n`));
                         } catch (e) {}
