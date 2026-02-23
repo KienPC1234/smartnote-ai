@@ -140,8 +140,8 @@ USER INSTRUCTIONS:
 
 export function QUIZ_PROMPT(lang: Lang) {
   const example = lang === "vi"
-    ? '[{"question": "Câu hỏi?", "choices": ["A", "B", "C", "D"], "answer": "A", "explanation": "Giải thích..."}]'
-    : '[{"question": "Question?", "choices": ["A", "B", "C", "D"], "answer": "A", "explanation": "Explanation..."}]';
+    ? '[{"question": "Câu hỏi?", "choices": ["A", "B", "C", "D"], "answer_index": 0, "explanation": "Giải thích..."}]'
+    : '[{"question": "Question?", "choices": ["A", "B", "C", "D"], "answer_index": 0, "explanation": "Explanation..."}]';
 
   return `
 TASK: Generate 5–8 multiple-choice questions from the source text.
@@ -153,7 +153,7 @@ OUTPUT FORMAT (JSON ARRAY ONLY):
   {
     "question": "The question text",
     "choices": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "answer": "Exact text of the correct option",
+    "answer_index": 0,
     "explanation": "Brief explanation"
   },
   ...
@@ -161,7 +161,7 @@ OUTPUT FORMAT (JSON ARRAY ONLY):
 
 HARD RULES:
 - Exactly 4 options in "choices" array.
-- "answer" MUST match EXACTLY one of the options in "choices".
+- "answer_index" MUST be an integer from 0 to 3, corresponding to the correct option in "choices".
 - Start immediately with [. No markdown code blocks.
 
 SOURCE:
