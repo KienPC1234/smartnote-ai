@@ -238,45 +238,67 @@ function parseJsonArrayStep(buffer: string): { items: any[]; rest: string } {
   const items: any[] = [];
   let currentBuffer = buffer.trim();
   
-  // Tìm điểm bắt đầu của mảng nếu chưa thấy
-  if (!currentBuffer.includes('[') && !currentBuffer.startsWith('{')) {
-    const firstBrace = currentBuffer.indexOf('{');
-    if (firstBrace === -1) return { items: [], rest: buffer };
-    currentBuffer = currentBuffer.slice(firstBrace);
-  } else if (currentBuffer.startsWith('[')) {
-    // Nếu buffer bắt đầu bằng '[', ta bỏ qua nó để tìm các '{'
-    const firstBrace = currentBuffer.indexOf('{');
-    if (firstBrace === -1) return { items: [], rest: buffer };
-    currentBuffer = currentBuffer.slice(firstBrace);
+  // Xử lý các tiền tố rác hoặc markdown code blocks nếu có
+  if (currentBuffer.includes('```json')) {
+    const idx = currentBuffer.indexOf('```json') + 7;
+    currentBuffer = currentBuffer.slice(idx).trim();
+  } else if (currentBuffer.startsWith('```')) {
+    const idx = currentBuffer.indexOf('```', 3) + 3; // có thể là đóng block cũ
+    currentBuffer = currentBuffer.slice(idx).trim();
   }
 
   let braceCount = 0;
+  let inString = false;
+  let escapeNext = false;
   let startIdx = -1;
   let lastParsedIdx = 0;
 
   for (let i = 0; i < currentBuffer.length; i++) {
-    if (currentBuffer[i] === '{') {
-      if (braceCount === 0) startIdx = i;
-      braceCount++;
-    } else if (currentBuffer[i] === '}') {
-      braceCount--;
-      if (braceCount === 0 && startIdx !== -1) {
-        const potentialObj = currentBuffer.slice(startIdx, i + 1);
-        try {
-          const obj = JSON.parse(potentialObj);
-          items.push(obj);
-          lastParsedIdx = i + 1;
-        } catch (e) {
-          // Malformed hoặc nested phức tạp, đợi thêm dữ liệu
+    const char = currentBuffer[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === '{') {
+        if (braceCount === 0) startIdx = i;
+        braceCount++;
+      } else if (char === '}') {
+        braceCount--;
+        if (braceCount === 0 && startIdx !== -1) {
+          const potentialObj = currentBuffer.slice(startIdx, i + 1);
+          try {
+            const obj = JSON.parse(potentialObj);
+            items.push(obj);
+            lastParsedIdx = i + 1;
+          } catch (e) {
+            // Malformed hoặc nested phức tạp, đợi thêm dữ liệu
+          }
+          startIdx = -1;
         }
       }
     }
   }
 
-  // Phần còn lại là phần chưa parse được (có thể là object đang dang dở)
+  // Phần còn lại là phần chưa parse được
   let rest = currentBuffer.slice(lastParsedIdx).trim();
-  // Xử lý dấu phẩy giữa các object trong array
+  
+  // Dọn dẹp dấu phẩy hoặc ngoặc vuông ở đầu/cuối của buffer rest
   if (rest.startsWith(',')) rest = rest.slice(1).trim();
+  if (rest.startsWith('[')) rest = rest.slice(1).trim();
+  if (rest === ']') rest = "";
 
   return { items, rest };
 }
@@ -292,9 +314,17 @@ function parseQuizFromBuffer(buffer: string): { items: Omit<QuizItem, "id">[]; r
   const valid: Omit<QuizItem, "id">[] = [];
 
   for (const it of items) {
-    if (it.question && Array.isArray(it.choices) && it.choices.length === 4 && it.answer) {
+    if (it.question && Array.isArray(it.choices) && it.choices.length === 4) {
       const choices = it.choices.map((c: any) => String(c));
-      const ansIdx = choices.findIndex((c: string) => c.trim() === String(it.answer).trim());
+      let ansIdx = -1;
+
+      if (typeof it.answer_index === 'number' && it.answer_index >= 0 && it.answer_index <= 3) {
+        ansIdx = it.answer_index;
+      } else if (it.answer) {
+        // Fallback cho logic cũ nếu model vẫn trả về text
+        ansIdx = choices.findIndex((c: string) => c.trim() === String(it.answer).trim());
+      }
+
       if (ansIdx !== -1) {
         valid.push({
           question: String(it.question),
