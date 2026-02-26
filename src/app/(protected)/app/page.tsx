@@ -10,6 +10,7 @@ import { FolderList } from "@/components/dashboard/folder-list";
 import { NoteCard } from "@/components/dashboard/note-card";
 import { Prisma } from "@prisma/client";
 import { dictionaries } from "@/lib/i18n/dictionaries";
+import { VectorIndexer } from "@/components/VectorIndexer";
 
 interface PageProps {
   searchParams: Promise<{
@@ -162,6 +163,7 @@ export default async function DashboardPage(props: PageProps) {
             )}
         </div>
       </div>
+      <VectorIndexer notes={notes} />
     </div>
   );
 }

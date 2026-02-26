@@ -277,7 +277,7 @@ export default function QuizView({
                     </div>
                 ) : (
                     <>
-                        <div className="prose prose-lg dark:prose-invert max-w-none font-semibold mb-10 text-foreground border-l-8 border-primary pl-6 py-2 leading-relaxed">
+                        <div className="prose prose-lg dark:prose-invert max-w-none font-semibold mb-10 text-foreground border-l-8 border-primary pl-6 py-2 leading-relaxed break-words whitespace-pre-wrap">
                             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
                                 {currentQ?.question || ""}
                             </ReactMarkdown>
@@ -308,7 +308,7 @@ export default function QuizView({
                                     )}>
                                         {String.fromCharCode(65 + cIdx)}
                                     </span>
-                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed text-current">
+                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed text-current break-words whitespace-pre-wrap">
                                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
                                             {choice}
                                         </ReactMarkdown>
@@ -331,7 +331,7 @@ export default function QuizView({
                                     </span>
                                 </div>
                                 <div className="p-6 bg-secondary-background border-2 border-border mb-6">
-                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed border-l-4 border-primary pl-6 text-foreground/80">
+                                    <div className="prose prose-sm dark:prose-invert font-medium text-lg leading-relaxed border-l-4 border-primary pl-6 text-foreground/80 break-words whitespace-pre-wrap">
                                         <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { output: "html", strict: false }]]}>
                                             {currentQ.explanation}
                                         </ReactMarkdown>

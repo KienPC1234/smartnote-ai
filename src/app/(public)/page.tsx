@@ -62,15 +62,19 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row gap-6 pt-12 w-full justify-center items-center">
                 <Link href="/auth/signup" className="w-full sm:w-auto">
-                    <Button className="w-full sm:w-64 h-16 text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-indigo-600 text-white uppercase italic">
-                        {t.landing.hero_cta}
-                        <ArrowRight className="ml-2 w-6 h-6" strokeWidth={4} />
+                    <Button className="w-full sm:w-auto sm:min-w-[16rem] h-auto min-h-[4rem] py-4 px-6 text-base sm:text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-indigo-600 text-white uppercase italic whitespace-normal break-words leading-tight">
+                        <span className="flex items-center justify-center gap-2 flex-wrap">
+                            {t.landing.hero_cta}
+                            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={4} />
+                        </span>
                     </Button>
                 </Link>
                 <Link href="/demo_video" className="w-full sm:w-auto">
-                    <Button variant="outline" className="w-full sm:w-64 h-16 text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-background text-foreground uppercase italic">
-                        <Play className="mr-2 w-5 h-5 fill-current" />
-                        {t.landing.demo_video}
+                    <Button variant="outline" className="w-full sm:w-auto sm:min-w-[16rem] h-auto min-h-[4rem] py-4 px-6 text-base sm:text-xl font-black border-[3px] border-foreground shadow-[6px_6px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,0.2)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all bg-background text-foreground uppercase italic whitespace-normal break-words leading-tight">
+                        <span className="flex items-center justify-center gap-2 flex-wrap">
+                            <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                            {t.landing.demo_video}
+                        </span>
                     </Button>
                 </Link>
             </div>
@@ -150,7 +154,7 @@ export default function LandingPage() {
                     <ul className="space-y-2 font-black text-xs uppercase italic">
                         <li><a href="#" className="hover:text-primary transition-colors">Twitter / X</a></li>
                         <li><a href="#" className="hover:text-primary transition-colors">Discord</a></li>
-                        <li><a href="#" className="hover:text-primary transition-colors">Github</a></li>
+                        <li><a href="https://github.com/KienPC1234/smartnote-ai" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Github</a></li>
                     </ul>
                 </div>
             </div>

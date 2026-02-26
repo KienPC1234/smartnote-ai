@@ -11,7 +11,9 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import Link from "next/link";
 import { useTranslation } from "./LanguageProvider";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { searchNodes } from "@/lib/vector-service";
 
 // ... (Interface Message không đổi)
 interface Message {
@@ -28,6 +30,7 @@ export function FloatingChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<{ id: string, preview: string, extractedText: string }[]>([]);
+  const { data: session } = useSession();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,26 +104,56 @@ export function FloatingChat() {
 
   async function handleSend() {
     if ((!input.trim() && uploadedImages.length === 0) || isLoading) return;
+
+    if (!session) {
+        toast.error("Authentication Required", { description: "Please sign in to use Neural Brain." });
+        return;
+    }
     
-    let fullContent = input.trim();
+    const userDisplayText = input.trim();
+    // API content = user display text + OCR + semantic context (hidden from UI)
+    let apiContent = userDisplayText;
+    
+    // Semantic Search Context - only sent to API, not shown in UI
+    if (userDisplayText) {
+        try {
+            const relevantNodes = await searchNodes(userDisplayText, 3);
+            if (relevantNodes.length > 0) {
+                const semanticContext = relevantNodes
+                    .map(node => `[MEMORY_NODE: ${node.title}] (Similarity: ${(node.score * 100).toFixed(1)}%)\n${node.content}`)
+                    .join("\n\n---\n\n");
+                apiContent = `${apiContent}\n\n[NEURAL_SEMANTIC_MEMORY_SNIPPETS]:\n${semanticContext}`;
+            }
+        } catch (e) {
+            console.error("[NeuralCenter] Semantic search failed:", e);
+        }
+    }
+
     if (uploadedImages.length > 0) {
         const ocrContext = uploadedImages.map((img, i) => `[IMAGE_${i+1}_OCR_TEXT]:\n${img.extractedText}`).join("\n\n");
-        fullContent = `${fullContent}\n\n[CONTEXT_FROM_UPLOADED_IMAGES]:\n${ocrContext}`;
+        apiContent = `${apiContent}\n\n[CONTEXT_FROM_UPLOADED_IMAGES]:\n${ocrContext}`;
     }
 
     setInput("");
     uploadedImages.forEach(img => URL.revokeObjectURL(img.preview));
     setUploadedImages([]);
     
-    const updatedMessages = [...messages, { role: "user", content: fullContent }];
-    setMessages(updatedMessages);
+    // Push clean display message to UI (without semantic context)
+    const displayMessages = [...messages, { role: "user", content: userDisplayText }];
+    setMessages(displayMessages);
     setIsLoading(true);
+
+    // Build API messages: all previous messages + the enriched current message
+    const apiMessages = [
+        ...messages.map(m => ({ role: m.role, content: m.content })),
+        { role: "user", content: apiContent }
+    ];
 
     try {
         const res = await fetch("/api/ai/global-chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) })
+            body: JSON.stringify({ messages: apiMessages })
         });
 
         if (!res.body) throw new Error("Connection lost.");
@@ -212,16 +245,16 @@ export function FloatingChat() {
           </button>
         </CardHeader>
         
-        <ScrollArea className="flex-1 bg-muted/20">
-          <CardContent className="p-4 space-y-6">
+        <ScrollArea className="flex-1 bg-muted/20 w-full overflow-x-hidden">
+          <CardContent className="p-4 space-y-6 w-full max-w-full overflow-x-hidden">
             {messages.length === 0 && (
               <div className="text-center py-20 px-10 opacity-40 font-black italic text-sm uppercase tracking-widest leading-relaxed">
                   {chatConfig.welcome}
               </div>
             )}
             {messages.map((m, i) => (
-              <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`group relative p-4 border-[3px] border-foreground max-w-[90%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]
+              <div key={i} className={`flex flex-col w-full min-w-0 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className={`group relative p-4 border-[3px] border-foreground max-w-[90%] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] break-words overflow-hidden min-w-0
                   ${m.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-background text-foreground'}
                 `}>
                   <div className={`flex items-center gap-2 mb-3 opacity-60 uppercase text-[9px] font-black tracking-[0.2em] ${m.role === 'user' ? 'text-white' : 'text-primary'}`}>
@@ -230,7 +263,7 @@ export function FloatingChat() {
                   </div>
 
                   {m.reasoning && (
-                    <div className="mb-4 bg-muted border-2 border-foreground/10 p-3 rounded shadow-inner">
+                    <div className="mb-4 bg-muted border-2 border-foreground/10 p-3 rounded shadow-inner overflow-hidden min-w-0">
                         <button 
                             onClick={() => toggleThinking(i)}
                             className="flex items-center justify-between w-full text-[9px] font-black uppercase text-muted-foreground hover:text-primary transition-colors"
@@ -242,15 +275,17 @@ export function FloatingChat() {
                             {m.isThinkingOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                         {m.isThinkingOpen && (
-                            <div className="mt-3 text-[10px] font-bold text-muted-foreground italic leading-relaxed border-t border-foreground/5 pt-2 animate-in fade-in duration-300">
+                            <div className="mt-3 text-[10px] font-bold text-muted-foreground italic leading-relaxed border-t border-foreground/5 pt-2 animate-in fade-in duration-300 break-words [overflow-wrap:anywhere]">
                                 {m.reasoning}
                             </div>
                         )}
                     </div>
                   )}
 
-                  <div className={`prose prose-sm dark:prose-invert max-w-none font-bold italic leading-relaxed text-current
-                    ${m.role === 'user' ? 'prose-p:text-white' : ''}`}>
+                  <div className={`prose prose-sm dark:prose-invert max-w-none font-bold italic leading-relaxed text-current break-words [overflow-wrap:anywhere] min-w-0 overflow-x-hidden
+                    prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-blockquote:my-1 prose-pre:my-1
+                    ${m.role === 'user' ? 'prose-p:text-white prose-headings:text-white prose-strong:text-white prose-code:text-white' : ''}
+                    prose-pre:max-w-full prose-pre:overflow-x-auto prose-code:break-words`}>
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm, remarkMath]} 
                         rehypePlugins={[[rehypeKatex, { output: 'html', strict: false }]]}

@@ -28,7 +28,7 @@ export default function Navbar() {
     <nav className="w-full border-b-[3px] border-foreground bg-background px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-50 transition-colors shadow-[0_4px_0_0_rgba(0,0,0,0.05)] dark:shadow-[0_4px_0_0_rgba(255,255,255,0.05)]">
       {/* Logo Section */}
       <div className="flex items-center gap-4">
-        <Link href={session ? "/app" : "/"} className="flex items-center gap-3 group">
+        <Link href="/" className="flex items-center gap-3 group">
             <div className="bg-primary p-2 border-[3px] border-foreground shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)] group-hover:rotate-[10deg] transition-transform duration-300">
               <Zap className="w-6 h-6 text-white fill-current" />
             </div>
@@ -82,7 +82,7 @@ export default function Navbar() {
                 >
                     <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                     <span className="font-black text-xs uppercase max-w-[100px] truncate text-foreground tracking-widest hidden md:block">
-                        {session.user?.name || t.nav.member}
+                        {session.user?.name || session.user?.email || t.nav.member}
                     </span>
                     <ChevronDown className="w-4 h-4 opacity-50 text-foreground" />
                 </button>

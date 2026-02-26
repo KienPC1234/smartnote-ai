@@ -173,7 +173,7 @@ export default function ChatBuddy({ noteId }: { noteId: string }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder={t.note.refinement_placeholder}
+            placeholder={t.note.chat_placeholder}
             className="h-14 border-4 border-black dark:border-white font-bold text-lg bg-zinc-50 dark:bg-zinc-800 focus-visible:ring-0 focus-visible:border-[var(--primary)] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] pr-12 text-foreground"
             />
             <button 
